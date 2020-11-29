@@ -1,0 +1,139 @@
+#ifndef GOGO_HEADER_GAMESTATE_H
+#define GOGO_HEADER_GAMESTATE_H
+
+#include "piece.h"
+
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+
+#define NUM_KOMA (12)
+
+// 盤面の状態を piece_state 12 個の配列として保持
+typedef piece_state(game_state)[NUM_KOMA];
+
+// 盤面の状態を整数として扱いたいときに使う
+// __int128_t は標準 C 言語には無いが, gcc による拡張でサポートされている
+typedef __int128_t game_state_hash;
+
+game_state_hash into_hash(game_state state) {
+    game_state_hash hash = 0;
+    for (int i = 0; i < NUM_KOMA; ++i)
+        hash += ((game_state_hash)state[i]) << (i * 8);
+    
+    return hash;
+}
+
+static const game_state initial_state = {
+    0b000110, // △歩
+    0b110011, // ▼歩
+    0b000010, // △銀
+    0b110110, // ▼銀
+    0b000001, // △金
+    0b110111, // ▼金
+    0b000011, // △角
+    0b110101, // ▼角
+    0b000101, // △飛
+    0b110100, // ▼飛
+    0b000000, // △王
+    0b111000, // ▼玉
+};
+
+// 各マスの状態を (人間に扱いやすい形で) 表す
+// promoted, first_ones は type が PIECE_EMPTY でないときだけ意味を持つ
+struct cell_state_tag {
+    piece_type type;
+    bool promoted;
+    bool first_ones;
+};
+
+typedef struct cell_state_tag cell_state;
+
+// 盤面の状態を (人間に扱いやすい形で) 表す
+struct board_type_tag {
+    piece_type hand[2][11];
+    cell_state field[5][5];
+};
+
+typedef struct board_type_tag board_type;
+
+static board_type* board_new() {
+    board_type* b = (board_type*)malloc(sizeof(board_type));
+    if (b == NULL) {
+        printf("memory allocation error in board_new()\n");
+        exit(EXIT_FAILURE);
+    }
+
+    return b;
+}
+
+static void board_free(board_type* b) {
+    if (b != NULL)
+        free(b);
+}
+
+// state を基に board に情報を書き込む
+// board は確保された有効なポインタである必要がある
+static void make_board(game_state state, board_type* board) {
+    int num_hand[2] = {};
+    for (int i = 0; i < 22; ++i)
+        board->hand[i / 11][i % 11] = PIECE_EMPTY;
+    
+    for (int i = 0; i < 25; ++i)
+        board->field[i / 5][i % 5].type = PIECE_EMPTY;
+    
+    for (int i = 0; i < NUM_KOMA; ++i) {
+        piece_state p = state[i];
+        int8_t coord = get_coord(p);
+
+        if (coord == TEGOMA) {
+            int w = (is_first_ones(p) ? 0 : 1);
+            board->hand[w][num_hand[w]] = (piece_type)(i % 6);
+            ++num_hand[w];
+        }
+        else {
+            cell_state* cell = &board->field[coord / 5][coord % 5];
+            cell->type = (piece_type)(i % 6);
+            cell->promoted = is_promoted(p);
+            cell->first_ones = is_first_ones(p);
+        }
+    }
+}
+
+static void print_board(game_state state) {
+    board_type board;
+    
+    make_board(state, &board);
+
+    printf("▼持手: ");
+    for (int i = 0; board.hand[1][i] != PIECE_EMPTY; ++i)
+        printf("%s", into_name(board.hand[1][i], false));
+    
+    printf("\n");
+
+    for (int y = 4; y > 0; --y) {
+        printf("_______________\n");
+        for (int x = 0; x < 5; ++x) {
+            cell_state* cell = &board.field[y][x];
+
+            if (cell->type != PIECE_EMPTY) {
+                const char* which_ones = (cell->first_ones ? "△" : "▼");
+                const char* koma = into_name(cell->type, cell->promoted);
+
+                printf("|%s%s", which_ones, koma);
+            }
+            else
+                printf("|　　");
+        }
+        printf("\n");
+    }
+    
+    printf("△持手: ");
+    for (int i = 0; board.hand[0][i] != PIECE_EMPTY; ++i)
+        printf("%s", into_name(board.hand[0][i], false));
+
+    printf("\n");
+}
+
+#endif // GOGO_HEADER_GAMESTATE_H
