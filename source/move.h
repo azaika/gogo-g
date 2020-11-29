@@ -61,6 +61,13 @@ bool is_check(board_type* board, bool is_first) {
     return true;
 }
 
+// 駒の動きとして移動が可能かどうか
+// 障害物 (味方の駒など) も考慮する
+bool able_to_move(board_type* board, move_type move, bool is_first) {
+    // ToDo: implement
+    return false;
+}
+
 bool validate_move(game_state state, move_type move, bool is_first) {
     // 成れないのに成ろうとしたら NG
     if (!can_promote(move, is_first) && move.do_promote)
@@ -69,11 +76,10 @@ bool validate_move(game_state state, move_type move, bool is_first) {
     board_type cur_board;
     make_board(state, &cur_board);
 
-    // 移動先に自分の駒があったら (打つ場合は相手の駒があっても) NG
-    if (!validate_absent(&cur_board, move, !move.is_drop, is_first))
-        return false;
-
     if (move.is_drop) {
+        // 打つ先に駒があるのは NG
+        if (!validate_absent(&cur_board, move, false, is_first))
+            return false;
         // 打つ先が敵陣なのは NG
         if (can_promote(move, is_first))
             return false;
@@ -82,6 +88,8 @@ bool validate_move(game_state state, move_type move, bool is_first) {
         if (!has_piece(&cur_board, move.piece, is_first))
             return false;
     }
+    else if (able_to_move(&cur_board, move, is_first)) // 駒の動きとして移動が可能でないなら NG
+        return false;
     
     // 歩が成れるのに成っていないのは NG
     if (move.piece == PIECE_FU && can_promote(move, is_first) && is_still_unpromoted(&cur_board, move))

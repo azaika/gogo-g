@@ -66,4 +66,76 @@ static const char* into_name(piece_type type, bool promoted) {
     }
 }
 
+enum piece_ability_tag {
+    IMMOVABLE  = 0,
+    REACH_ONE  = 1,
+    REACH_LINE = 2
+};
+
+typedef enum piece_ability_tag piece_ability;
+
+// direction
+// 0 1 2
+// 3 ↑ 4
+// 5 6 7
+static piece_ability get_piece_ability(piece_type type, bool promoted, int direction) {
+    static const piece_ability fu[8] = {
+        0, 1, 0,
+        0,    0,
+        0, 0, 0
+    };
+    static const piece_ability gin[8] = {
+        1, 1, 1,
+        0,    0,
+        1, 0, 1
+    };
+    static const piece_ability kin[8] = {
+        1, 1, 1,
+        1,    1,
+        0, 1, 0
+    };
+    static const piece_ability kaku[8] = {
+        2, 0, 2,
+        0,    0,
+        2, 0, 2
+    };
+    static const piece_ability uma[8] = {
+        2, 1, 2,
+        1,    1,
+        2, 1, 2
+    };
+    static const piece_ability hisha[8] = {
+        0, 2, 0,
+        2,    2,
+        0, 2, 0
+    };
+    static const piece_ability ryu[8] = {
+        1, 2, 1,
+        2,    2,
+        1, 2, 1
+    };
+    static const piece_ability ou[8] = {
+        1, 1, 1,
+        1,    1,
+        1, 1, 1
+    };
+
+    switch (type) {
+    case PIECE_FU:
+        return (promoted ? kin[direction] : fu[direction]);
+    case PIECE_GI:
+        return (promoted ? kin[direction] : gin[direction]);
+    case PIECE_KI:
+        return kin[direction];
+    case PIECE_KK:
+        return (promoted ? uma[direction] : kaku[direction]);
+    case PIECE_HI:
+        return (promoted ? ryu[direction] : hisha[direction]);
+    case PIECE_OU:
+        return ou[direction];
+    default:
+        return IMMOVABLE;
+    }
+}
+
 #endif // GOGO_HEADER_PIECE_H
