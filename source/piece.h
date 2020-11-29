@@ -32,14 +32,14 @@ static coord_type get_coord(piece_state piece) {
 
 static const coord_type TEGOMA = 25;
 
-enum piece_type_tag : int8_t {
+enum piece_type_tag {
     PIECE_FU = 0, // 歩/と
     PIECE_GI = 1, // 銀/成銀
     PIECE_KI = 2, // 金
     PIECE_KK = 3, // 角/馬
     PIECE_HI = 4, // 飛/龍
     PIECE_OU = 5, // 王, 玉
-    PIECE_EMPTY = -1
+    PIECE_EMPTY = 6
 };
 
 typedef enum piece_type_tag piece_type;

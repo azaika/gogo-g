@@ -110,4 +110,15 @@ bool validate_move(game_state state, move_type move, bool is_first) {
     return true;
 }
 
+// 入力文字列を move_type に変換する
+// 無効な文字列だった場合は false を返す。この場合 move の中身は壊れていても良い
+static bool parse_move(const char* input, move_type* move) {
+    // ToDo: implement
+}
+
+// move を表示する
+static void print_move(move_type move) {
+    // ToDo: implement
+}
+
 #endif // GOGO_HEADER_MOVE_H
