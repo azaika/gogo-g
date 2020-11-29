@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 #define NUM_KOMA (12)
 
@@ -40,6 +41,33 @@ static const game_state initial_state = {
     0b111000, // ▼玉
 };
 
+static void copy_game_state(game_state dest, const game_state src) {
+    assert(dest != NULL);
+    assert(src != NULL);
+
+    if (dest == src)
+        return;
+    
+    memcpy(dest, src, sizeof(game_state));
+}
+
+static game_state* generate_game_state() {
+    game_state* state = (game_state*)malloc(sizeof(game_state));
+    if (state == NULL) {
+        fprintf(stderr, "memory allocation error in generate_game_state()\n");
+        exit(EXIT_FAILURE);
+    }
+
+    copy_game_state(*state, initial_state);
+
+    return state;
+}
+
+static void free_game_state(game_state* state) {
+    if (state != NULL)
+        free(state);
+}
+
 // 各マスの状態を (人間に扱いやすい形で) 表す
 // promoted, first_ones は type が PIECE_EMPTY でないときだけ意味を持つ
 struct cell_state_tag {
@@ -61,7 +89,7 @@ typedef struct board_type_tag board_type;
 static board_type* board_new() {
     board_type* b = (board_type*)malloc(sizeof(board_type));
     if (b == NULL) {
-        printf("memory allocation error in board_new()\n");
+        fprintf(stderr, "memory allocation error in board_new()\n");
         exit(EXIT_FAILURE);
     }
 
