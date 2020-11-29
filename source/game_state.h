@@ -27,18 +27,18 @@ game_state_hash into_hash(game_state state) {
 }
 
 static const game_state initial_state = {
-    0b000110, // △歩
-    0b110011, // ▼歩
-    0b000010, // △銀
-    0b110110, // ▼銀
-    0b000001, // △金
-    0b110111, // ▼金
-    0b000011, // △角
-    0b110101, // ▼角
-    0b000101, // △飛
-    0b110100, // ▼飛
-    0b000000, // △王
-    0b111000, // ▼玉
+    0b0000101, // △歩
+    0b1010011, // ▼歩
+    0b0000010, // △銀
+    0b1010110, // ▼銀
+    0b0000001, // △金
+    0b1010111, // ▼金
+    0b0000011, // △角
+    0b1010101, // ▼角
+    0b0000100, // △飛
+    0b1010100, // ▼飛
+    0b0000000, // △王
+    0b1011000, // ▼玉
 };
 
 static void copy_game_state(game_state dest, const game_state src) {
@@ -117,12 +117,12 @@ static void make_board(game_state state, board_type* board) {
 
         if (coord == TEGOMA) {
             int w = (is_first_ones(p) ? 0 : 1);
-            board->hand[w][num_hand[w]] = (piece_type)(i % 6);
+            board->hand[w][num_hand[w]] = (piece_type)((i / 2) % 6);
             ++num_hand[w];
         }
         else {
             cell_state* cell = &board->field[coord / 5][coord % 5];
-            cell->type = (piece_type)(i % 6);
+            cell->type = (piece_type)((i / 2) % 6);
             cell->promoted = is_promoted(p);
             cell->first_ones = is_first_ones(p);
         }
@@ -134,30 +134,32 @@ static void print_board(game_state state) {
     
     make_board(state, &board);
 
-    printf("▼持手: ");
+    printf("▼手駒: ");
     for (int i = 0; board.hand[1][i] != PIECE_EMPTY; ++i)
         printf("%s", into_name(board.hand[1][i], false));
     
     printf("\n");
 
-    for (int y = 4; y > 0; --y) {
-        printf("_______________\n");
+    printf("__________________________\n");
+    for (int y = 4; y >= 0; --y) {
+        
         for (int x = 0; x < 5; ++x) {
             cell_state* cell = &board.field[y][x];
 
             if (cell->type != PIECE_EMPTY) {
-                const char* which_ones = (cell->first_ones ? "△" : "▼");
+                const char* which_ones = (cell->first_ones ? "▲" : "▼");
                 const char* koma = into_name(cell->type, cell->promoted);
 
-                printf("|%s%s", which_ones, koma);
+                printf("|%s%s ", which_ones, koma);
             }
             else
                 printf("|　　");
         }
-        printf("\n");
+        printf("|\n");
+        printf("|____|____|____|____|____|\n");
     }
     
-    printf("△持手: ");
+    printf("▲手駒: ");
     for (int i = 0; board.hand[0][i] != PIECE_EMPTY; ++i)
         printf("%s", into_name(board.hand[0][i], false));
 

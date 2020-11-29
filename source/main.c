@@ -26,6 +26,9 @@ int main(int argc, char** argv) {
 
     #ifdef DEBUG
     printf("init success!\n");
+    printf("(turn %d)\n", gc.turn);
+    print_board(*gc.state);
+    printf("\n");
     #endif
 
     while (advance_turn(&gc)) {

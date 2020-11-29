@@ -17,12 +17,12 @@ typedef int8_t coord_type;
 
 // 駒が先手番のものかどうか
 static bool is_first_ones(piece_state piece) {
-    return ((piece >> 7) & 1) == 0;
+    return ((piece >> 6) & 1) == 0;
 }
 
 // 駒が成っているかどうか
 static bool is_promoted(piece_state piece) {
-    return ((piece >> 6) & 1) == 0;
+    return ((piece >> 5) & 1) == 1;
 }
 
 // 駒の座標を取得する
