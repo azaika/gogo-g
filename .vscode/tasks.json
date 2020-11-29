@@ -5,14 +5,14 @@
     "tasks": [
         {
             "type": "shell",
-            "label": "C: gcc build active file (DEBUG)",
+            "label": "C: gcc build main.c (DEBUG)",
             "command": "/usr/bin/gcc",
             "args": [
                 "-g",
-                "${file}",
+                "${workspaceFolder}/source/main.c",
                 "-DDEBUG",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}.out"
+                "${workspaceFolder}/gogo.out"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
