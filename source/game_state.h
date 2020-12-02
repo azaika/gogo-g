@@ -18,7 +18,7 @@ typedef piece_state(game_state)[NUM_KOMA];
 // __int128_t は標準 C 言語には無いが, gcc による拡張でサポートされている
 typedef __int128_t game_state_hash;
 
-game_state_hash into_hash(game_state state) {
+static game_state_hash into_hash(game_state state) {
     game_state_hash hash = 0;
     for (int i = 0; i < NUM_KOMA; ++i)
         hash += ((game_state_hash)state[i]) << (i * 8);
