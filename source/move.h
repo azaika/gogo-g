@@ -21,43 +21,77 @@ typedef struct move_type_tag move_type;
 
 // (動かして良いかの確認をしないで) 駒を動かす
 void write_move(game_state state, move_type move) {
-    // ToDo: implement
+    int index = (get_coord(state[move.piece * 2]) == move.from) ? move.piece * 2 : move.piece * 2 + 1;
+    state[index] = state[index] & 0b00000 + move.to;
 }
 
 // 行き先に他の駒がいないかどうか確かめる
 // allow_opponent が true の場合, 相手の駒に重なるのは OK とする
 bool validate_absent(board_type* board, move_type move, bool allow_opponent, bool is_first) {
-    // ToDo: implement
-    return false;
+    if(allow_opponent == true)
+        return true;
+    else if(board->field[move.from / 5][move.from % 5].type == PIECE_EMPTY)
+        return true;
+    else
+        return false;    
 }
 
 // 二歩状態でないかどうか確かめる
 bool validate_twopawn(board_type* board) {
-    // ToDo: implement
+    for(int i = 0; i < 5; i++){
+        bool exist_fu_first = false;
+        bool exist_fu_second = false;
+        for(int j = 0; j < 5; j++){
+            if(board->field[i][j].type == PIECE_FU){
+                if(board->field[i][j].first_ones){
+                    if(exist_fu_first == true){
+                        return true;
+                    }else{
+                        exist_fu_first = true;
+                    }
+                }else{
+                    if(exist_fu_second == true){
+                        return true;
+                    }else{
+                        exist_fu_second = true;
+                    }
+                }
+            }
+        }
+    }
     return false;
 }
 
 // 自分の持ち駒に piece があるかを確かめる
 bool has_piece(board_type* board, piece_type piece, bool is_first) {
-    // ToDo: implement
+    for(int i = 0; board->hand[is_first][i] != PIECE_EMPTY; i++){
+        if(board->hand[is_first][i] == piece){
+            return true;
+        } 
+    }
     return false;
 }
 
 // 成れるかどうかを返す
 bool can_promote(move_type move, bool is_first) {
-    // ToDo: implement
-    return false;
+    if(move.from / 5 == 0 && !is_first) return true;
+    else if(move.from / 5 == 4 && is_first) return true;
+    else if(move.to / 5 == 0 && !is_first && !move.is_drop) return true;
+    else if(move.to / 5 == 4 && is_first && !move.is_drop) return true;
+    else return false;
 }
 
 // 成らないままかどうかを返す
 bool is_still_unpromoted(board_type* board, move_type move) {
-    // ToDo: implement
-    return false;
+    return can_promote(move, board->field[move.from / 5][move.from % 5].first_ones) && move.do_promote;
 }
 
 // 自分が王手をしているかどうかを返す
-bool is_check(board_type* board, bool is_first) {
-    // ToDo: implement
+bool is_check(board_type* board, bool is_first) {  
+    return true;
+}
+
+bool is_checkmate(board_type* board, bool is_first){
     return true;
 }
 
