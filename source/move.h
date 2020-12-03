@@ -23,9 +23,8 @@ typedef struct move_type_tag move_type;
 void write_move(game_state state, move_type move, bool is_first) {
     for(int i = 0; i < 12; i++){
         if(get_coord(state[i]) == move.to){
-            state[i] &= 0b1100000;
+            state[i] &= 0b0000000;
             state[i] |= TEGOMA;
-            state[i] &= 0b0011111;
             state[i] |= ((!is_first) << 6);
             break;
         }
