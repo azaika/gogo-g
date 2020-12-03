@@ -78,7 +78,7 @@ static bool advance_turn(gogo_controller* gc) {
 		char input[6];
 		scanf("%5s", input);
 
-		if (!parse_move(input, &move)) {
+		if (!parse_move(*gc->state, input, &move)) {
 			#ifdef DEBUG
 			fprintf(stderr, "invalid input\n");
 			#endif
@@ -109,7 +109,7 @@ static bool advance_turn(gogo_controller* gc) {
 		print_move(move);
 	}
 
-	write_move(*gc->state, move);
+	write_move(*gc->state, move, is_first_player_turn(gc));
 	gc->history[gc->turn] = into_hash(*gc->state);
 	++gc->turn;
 
