@@ -51,7 +51,35 @@ static bool is_first_player_turn(gogo_controller* gc) {
 // 千日手かつ後手が勝ちなら 2
 // を返す
 static int check_sennichite(gogo_controller* gc) {
-	// ToDo: implement
+	game_state_hash now_state;
+	now_state = gc->history[gc->turn];
+	int count = 0;
+	bool check_series_gote = true;
+	int first_turn = 0;
+	for(int now_turn = gc->turn - 1; now_turn >= 0; now_turn--){
+		if(gc->history[now_turn] == now_state){
+			count++;
+		}
+		bool is_first = (now_turn % 2 == gc->player_turn_parity);
+		bool is_sennte = !(now_turn % 2);
+
+		board_type now_board;
+		game_state now_state;
+		from_hash(gc->history, now_state);
+		make_board(now_state, &now_board);
+
+		if(!is_sennte){
+			check_series_gote &= is_check(&now_board, is_first);
+		}
+		if(count >= 4){
+			if(check_series_gote){
+				return 1;
+			}
+			else{
+				return 2;
+			}
+		}
+	}
 	return 0;
 }
 
@@ -61,8 +89,11 @@ static int check_sennichite(gogo_controller* gc) {
 // 後手が勝ちなら 2
 // を返す
 static int check_wins(gogo_controller* gc) {
-	// ToDo: implement
-	return 0;
+	if(is_checkmate(gc->state, is_first_player_turn(gc))){
+		return (gc->turn % 2 == 0) ? 1 : 2;
+	}else{
+		return 0;
+	}
 }
 
 // 勝敗が決しているかを返す

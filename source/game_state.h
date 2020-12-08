@@ -26,6 +26,13 @@ static game_state_hash into_hash(game_state state) {
     return hash;
 }
 
+static void from_hash(game_state_hash hash, game_state state){
+    for (int i = NUM_KOMA-1; i >= 0; --i){
+        state[i] = (piece_state)(hash & 0b11111111);
+        hash >>= 8;
+    }
+}
+
 static const game_state initial_state = {
     0b0000101, // △歩
     0b1010011, // ▼歩
