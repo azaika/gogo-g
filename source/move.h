@@ -31,25 +31,26 @@ void write_move(game_state state, move_type move, bool is_first) {
     }
     int index = (get_coord(state[move.piece * 2]) == move.from) ? move.piece * 2 : move.piece * 2 + 1;
     state[index] = ((state[index] >> 5) << 5) + move.to;
+    state[index] |= move.do_promote << 5;
 }
 
 // 行き先に他の駒がいないかどうか確かめる
 // allow_opponent が true の場合, 相手の駒に重なるのは OK とする
 bool validate_absent(board_type* board, move_type move, bool allow_opponent, bool is_first) {
-    if(allow_opponent == true)
+    if(allow_opponent == true && board->field[move.to / 5][move.to % 5].first_ones != is_first)
         return true;
-    else if(board->field[move.from / 5][move.from % 5].type == PIECE_EMPTY)
+    else if(board->field[move.to / 5][move.to % 5].type == PIECE_EMPTY)
         return true;
     else
         return false;    
 }
 
-// 二歩状態でないかどうか確かめる
+// 二歩状態でないかどうか確かめる 二歩ならtrue
 bool validate_twopawn(board_type* board) {
-    for(int i = 0; i < 5; i++){
+    for(int j = 0; j < 5; j++){
         bool exist_fu_first = false;
         bool exist_fu_second = false;
-        for(int j = 0; j < 5; j++){
+        for(int i = 0; i < 5; i++){
             if(board->field[i][j].type == PIECE_FU){
                 if(board->field[i][j].first_ones){
                     if(exist_fu_first == true){
@@ -72,8 +73,8 @@ bool validate_twopawn(board_type* board) {
 
 // 自分の持ち駒に piece があるかを確かめる
 bool has_piece(board_type* board, piece_type piece, bool is_first) {
-    for(int i = 0; board->hand[is_first][i] != PIECE_EMPTY; i++){
-        if(board->hand[is_first][i] == piece){
+    for(int i = 0; board->hand[!is_first][i] != PIECE_EMPTY; i++){
+        if(board->hand[!is_first][i] == piece){
             return true;
         } 
     }
@@ -101,11 +102,16 @@ bool able_to_move(board_type* board, move_type move, bool is_first) {
         return false;
     if (move.is_drop == false)
     {
+        //移動先に駒があるのは NG
+        if (!validate_absent(board, move, true, is_first))
+            return false;
+        
         if (board->field[move.from / 5][move.from % 5].first_ones != is_first)
         {
             //相手の駒を動かそうとした
             return false;
         }
+        
         int diff_x = move.to / 5 - move.from / 5;
         int diff_y = move.to % 5 - move.from % 5;
 
@@ -172,6 +178,7 @@ bool is_check(board_type* board, bool is_first) {
         for(int j = 0; j < 5; j++){
             if(board->field[i][j].first_ones == is_first){
                 move_type catch_king;
+                catch_king.is_drop = false;
                 catch_king.piece = board->field[i][j].type;
                 catch_king.from = (coord_type) 5 * i + j;
                 catch_king.to = king_coord;
@@ -221,7 +228,7 @@ bool validate_move(game_state state, move_type move, bool is_first) {
 
     if (move.is_drop && move.piece == PIECE_FU) {
         // 二歩は NG
-        if (!validate_twopawn(&next_board))
+        if (validate_twopawn(&next_board))
             return false;
         // 打ち歩詰めは NG (歩で王手はセーフなので後で直します)
         if (is_check(&next_board, is_first))
