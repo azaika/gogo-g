@@ -194,13 +194,13 @@ static bool is_check(board_type* board, bool is_first) {
 
 //自分が詰みかどうかを返す
 static bool is_checkmate(game_state state,  bool is_first){
-    board_type* board;
-    make_board(state, board);
+    board_type board;
+    make_board(state, &board);
 
     piece_type hand_type = PIECE_EMPTY;
     for(int i = 0; i < 11; i++){
-        if(board->hand[!is_first][i] != PIECE_EMPTY){
-            hand_type = board->hand[!is_first][i];
+        if(board.hand[!is_first][i] != PIECE_EMPTY){
+            hand_type = board.hand[!is_first][i];
             if(hand_type != PIECE_FU){
                 break;
             }
@@ -211,7 +211,7 @@ static bool is_checkmate(game_state state,  bool is_first){
     int my_king_coord_y;
     for(int i = 0; i < 5; i++){
         for(int j = 0; j < 5; j++){
-            if(board->field[i][j].first_ones == is_first && board->field[i][j].type == PIECE_OU){
+            if(board.field[i][j].first_ones == is_first && board.field[i][j].type == PIECE_OU){
                 my_king_coord_x = i;
                 my_king_coord_y = j;
             }
@@ -221,7 +221,7 @@ static bool is_checkmate(game_state state,  bool is_first){
     int dx[8] = {0, 1, 1, 1, 0, -1, -1, -1};
     int dy[8] = {1, 1, 0, -1, -1, -1, 0, 1};
 
-    if(!is_check(board, !is_first)){
+    if(!is_check(&board, !is_first)){
         return false;
     }else{
         for(int i = 0; i < 8; i++){
@@ -235,7 +235,7 @@ static bool is_checkmate(game_state state,  bool is_first){
             board_type new_board;
 
             //駒を打って王手を防げるか
-            if(board->field[now_x][now_y].type == PIECE_EMPTY){
+            if(board.field[now_x][now_y].type == PIECE_EMPTY && hand_type != PIECE_EMPTY){
                 move_type guard_move;
                 guard_move.is_drop = true;
                 guard_move.piece = hand_type;
@@ -258,7 +258,7 @@ static bool is_checkmate(game_state state,  bool is_first){
             king_move.from = my_king_coord_x * 5 + my_king_coord_y;
             king_move.do_promote = false;
             //王を動かして防げるか
-            if(able_to_move(board, king_move, is_first)){
+            if(able_to_move(&board, king_move, is_first)){
                 copy_game_state(new_state, state);
                 write_move(new_state, king_move, is_first);
                 make_board(new_state, &new_board);
@@ -310,7 +310,7 @@ bool validate_move(game_state state, move_type move, bool is_first) {
         if (validate_twopawn(&next_board))
             return false;
         // 打ち歩詰めは NG (歩で王手はセーフなので後で直します)
-        if (is_checkmate(&next_board, !is_first))
+        if (is_checkmate(next_state, !is_first))
             return false;
     }
 
