@@ -34,7 +34,7 @@ static void from_hash(game_state_hash hash, game_state state){
 }
 
 static const game_state initial_state = {
-    0b0000101, // △歩
+    /*0b0000101, // △歩
     0b1010011, // ▼歩
     0b0000010, // △銀
     0b1010110, // ▼銀
@@ -45,7 +45,19 @@ static const game_state initial_state = {
     0b0000100, // △飛
     0b1010100, // ▼飛
     0b0000000, // △王
-    0b1011000, // ▼玉
+    0b1011000, // ▼玉*/
+    0b0011001, // △歩
+    0b1011001, // ▼歩
+    0b0001100, // △銀
+    0b1011001, // ▼銀
+    0b0001101, // △金
+    0b1011001, // ▼金
+    0b0011001, // △角
+    0b1011001, // ▼角
+    0b0011001, // △飛
+    0b1011001, // ▼飛
+    0b0000000, // △王
+    0b1010110, // ▼玉
 };
 
 static void copy_game_state(game_state dest, const game_state src) {

@@ -90,7 +90,7 @@ static int check_sennichite(gogo_controller* gc) {
 // を返す
 static int check_wins(gogo_controller* gc) {
 	if(is_checkmate(*(gc->state), is_first_player_turn(gc))){
-		return (gc->turn % 2 == 0) ? 1 : 2;
+		return (gc->turn % 2 == 0) ? 2 : 1;
 	}else{
 		return 0;
 	}

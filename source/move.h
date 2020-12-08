@@ -117,7 +117,7 @@ bool able_to_move(board_type* board, move_type move, bool is_first) {
 
         int d = 9; //方角（1~8）
         if (diff_x == -diff_y && diff_y > 0)
-            d = (is_first) ? 0 : 7;
+            d = (is_first) ? 7 : 0;
         if (diff_x == 0 && diff_y > 0)
             d = (is_first) ? 4 : 3;
         if (diff_x == diff_y && diff_y > 0)
@@ -125,7 +125,7 @@ bool able_to_move(board_type* board, move_type move, bool is_first) {
         if (diff_x > 0 && diff_y == 0)
             d = (is_first) ? 1 : 6;
         if (diff_x == -diff_y && diff_y < 0)
-            d = (is_first) ? 7 : 0;
+            d = (is_first) ? 0 : 7;
         if (diff_x == 0 && diff_y < 0)
             d = (is_first) ? 3 : 4;
         if (diff_x == diff_y && diff_y < 0)
