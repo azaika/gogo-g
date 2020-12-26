@@ -246,7 +246,7 @@ static bool is_checkmate(game_state state,  bool is_first){
                 copy_game_state(new_state, state);
                 write_move(new_state, guard_move, is_first);
                 make_board(new_state, &new_board);
-                if(validate_twopawn(&new_board) || !is_check(&new_board, !is_first)){
+                if((!validate_twopawn(&new_board)) && (!is_check(&new_board, !is_first))){
                     return false;
                 }
             }
