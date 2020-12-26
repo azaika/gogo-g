@@ -362,13 +362,12 @@ static bool parse_move(game_state state, const char* input, move_type* move) {
 // move を表示する
 static void print_move(move_type move) {
     char* drop_piece_list[5] = {"FU", "GI", "KI", "KK", "HI"};
-    char move_str[5];
+    char move_str[6] = {};
     if(move.is_drop){
         move_str[0] = (char)(move.to / 5) + '0';
         move_str[1] = (char)(move.to % 5) + 'A';
         move_str[2] = drop_piece_list[move.piece][0];
         move_str[3] = drop_piece_list[move.piece][1];
-        move_str[4] = '\0';
     }
     else{
         move_str[0] = (char)(move.from / 5) + '0';
