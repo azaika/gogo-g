@@ -3,10 +3,34 @@
 
 #include "game_state.h"
 #include "move.h"
+#include "random.h"
 
 #include <stdbool.h>
 
-static move_type ai_decide_move(game_state state, bool is_first) {
+struct ai_seed_tag {
+    // ToDo: implement
+};
+
+typedef struct ai_seed_tag ai_seed;
+
+// ランダムな seed を作成する
+static void ai_generate_random_seed(ai_seed* seed, pcg64_state* rng) {
+    // ToDo: implement
+}
+
+// ai_seed を文字列に変換する
+static void ai_serialize_seed(ai_seed* seed, const char* buf) {
+    // ToDo: implement
+}
+
+// 文字列を ai_seed に変換する
+// 失敗した場合は NULL を返す
+static ai_seed* ai_deserialize_seed(const char* str) {
+    // ToDo: implement
+    return NULL;
+}
+
+static move_type ai_decide_move(ai_seed* seed, game_state state, bool is_first) {
     // ToDo: implement
     // テスト用で書き換えてありますが特に意味はありません
     move_type move;
