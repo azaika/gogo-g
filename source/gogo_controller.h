@@ -73,44 +73,6 @@ static bool is_first_player_turn(gogo_controller* gc) {
 	return gc->turn % 2 == gc->player_turn_parity;
 }
 
-// 千日手かどうかを判定する
-// 千日手ではないなら 0
-// 千日手かつ先手が勝ちなら 1
-// 千日手かつ後手が勝ちなら 2
-// を返す
-static int check_sennichite(gogo_controller* gc) {
-	game_state_hash now_state;
-	now_state = gc->history[gc->turn];
-	int count = 0;
-	bool check_series_gote = true;
-	int first_turn = 0;
-	for(int now_turn = gc->turn - 1; now_turn >= 0; now_turn--){
-		if(gc->history[now_turn] == now_state){
-			count++;
-		}
-		bool is_first = (now_turn % 2 == gc->player_turn_parity);
-		bool is_sennte = !(now_turn % 2);
-
-		board_type now_board;
-		game_state now_state;
-		from_hash(gc->history[now_turn], now_state);
-		make_board(now_state, &now_board);
-
-		if(!is_sennte){
-			check_series_gote &= is_check(&now_board, is_first);
-		}
-		if(count >= 4){
-			if(check_series_gote){
-				return 1;
-			}
-			else{
-				return 2;
-			}
-		}
-	}
-	return 0;
-}
-
 // どちらかが王を取って勝っているかどうかを判定する
 // どちらも勝ちでないなら 0
 // 先手が勝ちなら 1
@@ -172,7 +134,7 @@ static bool advance_turn(gogo_controller* gc) {
 	gc->history[gc->turn] = into_hash(*gc->state);
 	++gc->turn;
 
-	int sennichite = check_sennichite(gc);
+	int sennichite = check_sennichite(gc->history, gc->turn, is_first_player_turn(gc));
 	if (sennichite) {
 		printf(sennichite == 1 ? "You Win\n" : "You Lose\n");
 		return false;

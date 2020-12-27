@@ -271,6 +271,43 @@ static bool is_checkmate(game_state state,  bool is_first){
     }
 }
 
+// 千日手かどうかを判定する
+// 千日手ではないなら 0
+// 千日手かつ先手が勝ちなら 1
+// 千日手かつ後手が勝ちなら 2
+// を返す
+static int check_sennichite(game_state_hash history[], int turn, bool is_first) {
+	game_state_hash now_state;
+	now_state = history[turn];
+	int count = 0;
+	bool check_series_gote = true;
+	int first_turn = 0;
+	for (int now_turn = turn - 1; now_turn >= 0; now_turn--) {
+		if (history[now_turn] == now_state) {
+			count++;
+		}
+		bool is_sennte = !(now_turn % 2);
+
+		board_type now_board;
+		game_state now_state;
+		from_hash(history[now_turn], now_state);
+		make_board(now_state, &now_board);
+
+		if (!is_sennte) {
+			check_series_gote &= is_check(&now_board, is_first);
+		}
+		if (count >= 4) {
+			if(check_series_gote) {
+				return 1;
+			}
+			else {
+				return 2;
+			}
+		}
+	}
+	return 0;
+}
+
 bool validate_move(game_state state, move_type move, bool is_first) {
     // 成れないのに成ろうとしたら NG
     if (!can_promote(move, is_first) && move.do_promote)

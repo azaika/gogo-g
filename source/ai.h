@@ -13,6 +13,10 @@ struct ai_seed_tag {
 
 typedef struct ai_seed_tag ai_seed;
 
+static void ai_copy_seed(const ai_seed* src, ai_seed* dest) {
+    // ToDo: implement
+}
+
 // ランダムな seed を作成する
 static void ai_generate_random_seed(ai_seed* seed, pcg64_state* rng) {
     // ToDo: implement
