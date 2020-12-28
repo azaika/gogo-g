@@ -62,40 +62,32 @@ static int ai_evaluate(game_state state, bool is_first) {
     // make_board(state, &board);
 
     //駒の価値　(初期値)について
-
-    //if文の中身がどう書けば良いのか迷走したので　
-    //歩とと金と持ち歩の3箇所だけやっていただけるとそれを真似てやれるので教えていただきたいです
     value += 110 * count_pieces(state, PIECE_FU, is_first, false, false); // 歩があったら評価値+ 110
-    if (0) value += 810; // 銀があったら
-    if (0) value += 910; //金があったら
-    if (0) value += 1290; //角があったら
-    if (0) value += 1670; // 飛車があったら
+    value += 810 * count_pieces(state, PIECE_GI, is_first, false, false); //銀があったら810
+    value += 910 * count_pieces(state, PIECE_KI, is_first, false, false); //金があったら
+    value += 1290 * count_pieces(state, PIECE_KK, is_first, false, false); //角があったら
+    value += 1670 * count_pieces(state, PIECE_HI, is_first, false, false); // 飛車があったら
     value += 890 * count_pieces(state, PIECE_FU, is_first, false, true); // と金があったら
-    if (0) value += 930; // 成り銀があったら
-    if (0) value += 1980; // 馬があったら
-    if (0) value += 2400; // 龍があったら
+    value += 930 * count_pieces(state, PIECE_GI, is_first, false, true); //成り銀があったら
+    value += 1980 * count_pieces(state, PIECE_KK, is_first, false, true); //馬があったら
+    value += 2400 * count_pieces(state, PIECE_HI, is_first, true, true); // 龍があったら
     value += 150 * count_pieces(state, PIECE_FU, is_first, true, false); // 持ち歩があったら
-    if (0) value += 1100; // 持ち銀があったら
-    if (0) value += 1260; // 持ち金があったら
-    if (0) value += 1460; // 持ち角があったら
-    if (0) value += 2000; // 持ち飛車があったら
-    if (0) value += 50000; // 王があったら
+    value += 1100 * count_pieces(state, PIECE_GI, is_first, true, false); //持ち銀があったら
+    value += 1260 * count_pieces(state, PIECE_KI, is_first, true, false); //持ち金があったら
+    value += 1460 * count_pieces(state, PIECE_KK, is_first, true, false); //持ち角があったら
+    value += 2000 * count_pieces(state, PIECE_HI, is_first, true, false); //持ち飛車があったら
+    value += 50000 * count_pieces(state, PIECE_OU, is_first, false, false); //王があったら
     
     //相手玉と自分の駒の相対的な位置関係による評価値変動 (初期値)
-    //相手玉が2回行動してたどり着ける範囲(9箇所)と自分の駒8種類について
-    //どう表現したら良いのかわからないので
-    //相手が後手だった時、相手玉が5E(11000)の時の歩の評価のところだけでもやっていただけると
-    //あとはそれを真似してやれるので教えていただきたいです。
-    
-
-    // 歩
-    // 銀
-    // 金、と金、成り銀
-    // 角
-    // 飛車
-    // 馬
-    // 龍
-    // 自玉
+    //相手玉と自分の駒8種類について
+    // 歩 0
+    // 銀 1
+    // 金、と金、成り銀 2
+    // 角 3
+    // 飛車 4
+    // 馬 5
+    // 龍 6
+    // 自玉 7
     uint8_t table[8][9][5] = {
         {},
         {},
@@ -133,192 +125,21 @@ static int ai_evaluate(game_state state, bool is_first) {
         else if (i / 2 == PIECE_GI) {
             kind = (is_promoted(state[i]) ? 2 : 1);
         }
-        // ...以下同様
+        else if (i / 2 ==  PIECE_KI) {
+            kind = 2;
+        }
+        else if (i /2 == PIECE_KK) {
+            kind = (is_promoted(state[i]) ?  3 : 5);
+        }
+        else if (i / 2 == PIECE_HI) {
+            kind = (is_promoted(state[i]) ?  4 : 6);
+        }
+        else if (i / 2 == PIECE_OU) {
+            kind = 7;
+        }
 
-
-        value += table[kind][py - cy + 4][px - cx];
+    value += table[kind][py - cy + 4][px - cx];
     }    
-
-    //相手が後手だった時、相手玉が5E(11000)の時
-    //歩
-    //銀
-    //金、と金、成り銀
-    //角
-    //飛車
-    //馬
-    //龍
-    //自玉
-
-
-    //相手が先手だった時,相手玉が1A(00000)の時
-    //歩
-    //銀
-    //金、と金、成り銀
-    //角
-    //飛車
-    //馬
-    //龍
-    //自玉
-
-    //相手が後手だった時、相手玉が5D(10111)の時
-    //歩
-    //銀
-    //金、と金、成り銀
-    //角
-    //飛車
-    //馬
-    //龍
-    //自玉
-
-    //相手が先手だった時、相手玉が1B(00001)の時
-    //歩
-    //銀
-    //金、と金、成り銀
-    //角
-    //飛車
-    //馬
-    //龍
-    //自玉
-
-    //相手が後手だった時、相手玉が5C(10110)の時
-    //歩
-    //銀
-    //金、と金、成り銀
-    //角
-    //飛車
-    //馬
-    //龍
-    //自玉
-
-    //相手が先手だった時、相手玉が1C(00010)の時
-    //歩
-    //銀
-    //金、と金、成り銀
-    //角
-    //飛車
-    //馬
-    //龍
-    //自玉
-
-    //相手が後手だった時、相手玉が4E(10011)の時
-    //歩
-    //銀
-    //金、と金、成り銀
-    //角
-    //飛車
-    //馬
-    //龍
-    //自玉
-
-    //相手が先手だった時、相手玉が2A(00101)の時
-    //歩
-    //銀
-    //金、と金、成り銀
-    //角
-    //飛車
-    //馬
-    //龍
-    //自玉
-
-    //相手が後手だった時、相手玉が4D(10010)の時
-    //歩
-    //銀
-    //金、と金、成り銀
-    //角
-    //飛車
-    //馬
-    //龍
-    //自玉
-
-    //相手が先手だった時、相手玉が2B(00110)の時
-    //歩
-    //銀
-    //金、と金、成り銀
-    //角
-    //飛車
-    //馬
-    //龍
-    //自玉
-
-    //相手が後手だった時、相手玉が4C(10001)の時
-    //歩
-    //銀
-    //金、と金、成り銀
-    //角
-    //飛車
-    //馬
-    //龍
-    //自玉
-
-    //相手が先手だった時、相手玉が2C(00111)の時
-    //歩
-    //銀
-    //金、と金、成り銀
-    //角
-    //飛車
-    //馬
-    //龍
-    //自玉
-
-    //相手が後手だった時、相手玉が3E(01110)の時
-    //歩
-    //銀
-    //金、と金、成り銀
-    //角
-    //飛車
-    //馬
-    //龍
-    //自玉
-
-    //相手が先手だった時、相手玉が3A(01010)の時
-    //歩
-    //銀
-    //金、と金、成り銀
-    //角
-    //飛車
-    //馬
-    //龍
-    //自玉
-
-    //相手が後手だった時、相手玉が3D(01101)の時
-    //歩
-    //銀
-    //金、と金、成り銀
-    //角
-    //飛車
-    //馬
-    //龍
-    //自玉
-
-    //相手が先手だった時、相手玉が3B(01011)の時
-    //歩
-    //銀
-    //金、と金、成り銀
-    //角
-    //飛車
-    //馬
-    //龍
-    //自玉
-
-    //相手が後手だった時、相手玉が3C(01100)の時
-    //歩
-    //銀
-    //金、と金、成り銀
-    //角
-    //飛車
-    //馬
-    //龍
-    //自玉
-
-    //相手が先手だった時、相手玉が3C(01100)の時
-    //歩
-    //銀
-    //金、と金、成り銀
-    //角
-    //飛車
-    //馬
-    //龍
-    //自玉
 
     return value;
 }
