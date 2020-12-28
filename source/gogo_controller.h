@@ -41,7 +41,7 @@ static void init_gogo(gogo_controller* gc, bool is_player_first) {
 			gc->seed = (ai_seed*)malloc(sizeof(ai_seed));
 			pcg64_state* rng = (pcg64_state*)malloc(sizeof(pcg64_state));
 			pcg64_srandom_by_time(rng);
-			ai_generate_random_seed(seed, rng);
+			ai_generate_random_seed(gc->seed, rng);
 
 			free(rng);
 			return;
