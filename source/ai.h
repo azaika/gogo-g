@@ -167,6 +167,8 @@ static void all_possible_moves(game_state state, move_type* possible_moves, int*
     *move_number = moves_index;
 }
 
+static int alpha_beta_min(game_state state, bool is_first, int search_depth, int alpha, int beta, move_type* best_move);
+
 static int alpha_beta_max(game_state state, bool is_first, int search_depth, int alpha, int beta, move_type* best_move){
     int value;
     if(search_depth == 0){
@@ -197,7 +199,7 @@ static int alpha_beta_max(game_state state, bool is_first, int search_depth, int
     return alpha;
 }
 
-static int alpha_beta_min(game_state state, bool is_first, int search_depth, int alpha, int beta, move_type* best_move){
+static int alpha_beta_min(game_state state, bool is_first, int search_depth, int alpha, int beta, move_type* best_move) {
     int value;
     if(search_depth == 0){
         return ai_evaluate(state, is_first);
