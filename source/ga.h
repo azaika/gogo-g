@@ -64,7 +64,7 @@ static void ga_do_tournament(int size, ai_seed challengers[], int k, int winners
 
     for (int i = 0; i < size; ++i) {
         for (int j = i + 1; j < size; ++j) {
-            int res = ga_battle(&challengers[i], &challengers[j], (uint32_t)TIME(NULL) % 2);
+            int res = ga_battle(&challengers[i], &challengers[j], (uint32_t)time(NULL) % 2);
 
             points[i] += res;
             points[j] -= res;

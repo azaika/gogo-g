@@ -24,6 +24,28 @@
                 "kind": "build",
                 "isDefault": true
             },
+        },
+        {
+            "type": "shell",
+            "label": "C: gcc build learning.c (DEBUG)",
+            "command": "/usr/bin/gcc",
+            "args": [
+                "-g",
+                "${workspaceFolder}/source/learning.c",
+                "-DDEBUG",
+                "-o",
+                "${workspaceFolder}/learning.out"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
         }
     ]
 }
