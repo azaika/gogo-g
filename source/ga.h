@@ -136,35 +136,36 @@ static void ga_mutate_seed(ai_seed* seed, pcg64_state* rng) {
 }
 
 static void ga_select_next(int n, ai_seed cur[], ai_seed next[], pcg64_state* rng) {
-    const int num_tops = 10;
+    const int num_tops = 7;
     const int tournament_size = 20;
 
-    assert(n <= 1024 && n % num_tops == 0);
+    assert(n <= 512);
 
     int winners[num_tops];
 
     int num_adopted = 0;
 
-    static ai_seed candidate[1024];
-    for (int i = 0; i < n / num_tops; ++i) {
+    static ai_seed candidate[512];
+    for (int i = 0; i < tournament_size; ++i) {
         random_select(n, cur, tournament_size, candidate, rng);
-        ga_do_tournament(20, candidate, num_tops, winners);
+        ga_do_tournament(tournament_size, candidate, num_tops, winners);
 
-        // 1 位と 2 位はそのまま採用
+        // 1 ～ 3 位はそのまま採用
         ai_copy_seed(&cur[winners[0]], &next[i * num_tops]);
         ai_copy_seed(&cur[winners[1]], &next[i * num_tops + 1]);
-
-        // 3-5 4-5 の組み合わせ以外は交配して採用
-        int num_written = 2;
+        ai_copy_seed(&cur[winners[2]], &next[i * num_tops + 2]);
+        
+        // 4-7, 5-6, 5-7, 6-7 の組み合わせ以外は交配して採用
+        int num_written = 3;
         for (int j = 0; j < num_tops; ++i) {
-            for (int k = j + 1; k < num_tops && j + k <= 5; ++k) {
+            for (int k = j + 1; k < num_tops && j + k <= 9; ++k) {
                 ga_cross_seeds(&cur[winners[j]], &cur[winners[k]], &next[i * num_tops + num_written], rng);
                 ++num_written;
             }
         }
 
         // 1 位以外は突然変異しうる
-        for (int j = 1; j < num_tops; ++j) {
+        for (int j = 1; j < tournament_size; ++j) {
             ga_mutate_seed(&next[j], rng);
         }
     }
