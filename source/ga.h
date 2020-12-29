@@ -32,21 +32,21 @@ static int ga_battle(ai_seed* s1, ai_seed* s2, bool is_s1_first) {
     int turn = 0;
     move_type move;
     while (turn < TURN_LIMIT) {
-        move = ai_decide_move((turn % 2 == 0 ? s1 : s2), *state, turn % 2 == 0);
+        move = ai_decide_move((turn % 2 == 1 ? s1 : s2), *state, turn % 2 == 1);
 
-        write_move(*state, move, turn % 2 == 0);
+        write_move(*state, move, turn % 2 == 1);
         history[turn] = into_hash(*state);
         ++turn;
 
-        int sennichite = check_sennichite(history, turn, turn % 2 == 0);
+        int sennichite = check_sennichite(history, turn, turn % 2 == 1);
         if (sennichite) {
             free_game_state(state);
             return ((sennichite == 1) == is_s1_first ? 1 : -1);
         }
 
-        if(is_checkmate(*state, turn % 2 == 0)) {
+        if(is_checkmate(*state, turn % 2 == 1)) {
             free_game_state(state);
-		    return ((turn % 2 == 0) == is_s1_first ? -1 : 1);
+		    return ((turn % 2 == 1) == is_s1_first ? -1 : 1);
 	    }
     }
 
