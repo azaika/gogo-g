@@ -77,7 +77,9 @@ static int ai_evaluate(game_state state, bool is_first) {
     value += 1460 * count_pieces(state, PIECE_KK, is_first, true, false); //持ち角があったら
     value += 2000 * count_pieces(state, PIECE_HI, is_first, true, false); //持ち飛車があったら
     value += 50000 * count_pieces(state, PIECE_OU, is_first, false, false); //王があったら
-    
+    value += 50000 * count_pieces(state, PIECE_OU, is_first, true, false); //王があったら
+
+
     //相手玉と自分の駒の相対的な位置関係による評価値変動 (初期値)
     //相手玉と自分の駒8種類について
     // 歩 0
