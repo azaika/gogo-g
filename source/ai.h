@@ -84,6 +84,13 @@ static int count_pieces(game_state state, piece_type type, bool is_first, bool i
 // 評価関数
 // is_first : 先手番のターンかどうか
 static int ai_evaluate(ai_seed* seed, game_state state, bool is_first) {
+    if (check_wins(state) == (is_first ? 1 : 2)) {
+        return 200000000;
+    }
+    if (check_wins(state) == (is_first ? 2 : 1)) {
+        return -200000000;
+    }
+
     int value = 0; // 評価値
 
     //駒の価値　(初期値)について
@@ -155,7 +162,7 @@ static void all_possible_moves(game_state state, move_type* possible_moves, int*
         if(is_first_ones(state[i]) == is_first){
             for(coord_type j = 0; j < 25; j++){
                 move_type move_tmp;
-                move_tmp.is_drop = get_coord(state[i] == TEGOMA);
+                move_tmp.is_drop = (get_coord(state[i]) == TEGOMA);
                 move_tmp.piece = (piece_type)((i / 2) % 6);
                 move_tmp.from = get_coord(state[i]);
                 move_tmp.to = j;
@@ -236,7 +243,7 @@ static int alpha_beta_min(ai_seed* seed, game_state state, bool is_first, int se
 
 static move_type ai_decide_move(ai_seed* seed, game_state state, bool is_first) {
     move_type move;
-    int search_depth = 7;
+    int search_depth = 6;
     int INF = 100000000;
     
     alpha_beta_max(seed, state, is_first, search_depth, -INF, INF, &move);

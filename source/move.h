@@ -29,7 +29,8 @@ void write_move(game_state state, move_type move, bool is_first) {
             break;
         }
     }
-    int index = (get_coord(state[move.piece * 2]) == move.from) ? move.piece * 2 : move.piece * 2 + 1;
+    
+    int index = (get_coord(state[move.piece * 2]) == move.from && (is_first_ones(state[move.piece * 2]) == is_first)) ? move.piece * 2 : move.piece * 2 + 1;
     state[index] = ((state[index] >> 5) << 5) + move.to;
     state[index] |= move.do_promote << 5;
 }
@@ -83,7 +84,8 @@ bool has_piece(board_type* board, piece_type piece, bool is_first) {
 
 // 成れるかどうかを返す
 bool can_promote(move_type move, bool is_first) {
-    if(move.from / 5 == 0 && !is_first) return true;
+    if (move.is_drop) return false;
+    else if(move.from / 5 == 0 && !is_first) return true;
     else if(move.from / 5 == 4 && is_first) return true;
     else if(move.to / 5 == 0 && !is_first && !move.is_drop) return true;
     else if(move.to / 5 == 4 && is_first && !move.is_drop) return true;
@@ -271,6 +273,23 @@ static bool is_checkmate(game_state state,  bool is_first){
     }
 }
 
+// どちらかが王を取って勝っているかどうかを判定する
+// どちらも勝ちでないなら 0
+// 先手が勝ちなら 1
+// 後手が勝ちなら 2
+// を返す
+static int check_wins(game_state state) {
+	if (get_coord(state[PIECE_OU * 2]) == TEGOMA) {
+		return 2;
+	}
+	else if (get_coord(state[PIECE_OU * 2 + 1]) == TEGOMA) {
+		return 1;
+	}
+	else {
+		return 0;
+	}
+}
+
 // 千日手かどうかを判定する
 // 千日手ではないなら 0
 // 千日手かつ先手が勝ちなら 1
@@ -352,7 +371,7 @@ bool validate_move(game_state state, move_type move, bool is_first) {
     }
 
     // 相手から王手を掛けられているのに放置するのは NG
-    if (is_check(&cur_board, !is_first) && is_check(&next_board, !is_first))
+    if (is_check(&cur_board, !is_first) && is_check(&next_board, !is_first) && check_wins(next_state) != (is_first ? 1 : 2))
         return false;
 
     return true;
@@ -400,16 +419,16 @@ static bool parse_move(game_state state, const char* input, move_type* move) {
 static void print_move(move_type move) {
     char* drop_piece_list[5] = {"FU", "GI", "KI", "KK", "HI"};
     char move_str[6] = {};
-    if(move.is_drop){
-        move_str[0] = (char)(move.to / 5) + '0';
+    if(move.is_drop) {
+        move_str[0] = (char)(move.to / 5) + '1';
         move_str[1] = (char)(move.to % 5) + 'A';
         move_str[2] = drop_piece_list[move.piece][0];
         move_str[3] = drop_piece_list[move.piece][1];
     }
     else{
-        move_str[0] = (char)(move.from / 5) + '0';
+        move_str[0] = (char)(move.from / 5) + '1';
         move_str[1] = (char)(move.from % 5) + 'A';
-        move_str[2] = (char)(move.to / 5) + '0';
+        move_str[2] = (char)(move.to / 5) + '1';
         move_str[3] = (char)(move.to % 5) + 'A';
         move_str[4] = (move.do_promote) ? 'N' : '\0';
     }
