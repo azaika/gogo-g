@@ -369,7 +369,7 @@ static bool parse_move(game_state state, const char* input, move_type* move) {
     if(strlen(input) != 4 && strlen(input) != 5) return false;
 
 
-    if(input[0] < '0' || input[0] > '4') return false;
+    if(input[0] < '1' || input[0] > '5') return false;
     if(input[1] < 'A' || input[1] > 'E') return false;
 
     for(int i = 0; i < 5; i++){
@@ -377,20 +377,20 @@ static bool parse_move(game_state state, const char* input, move_type* move) {
             move->is_drop = true;
             move->piece = i;
             move->from = TEGOMA;
-            move->to = ((int)(input[0] - '0')) * 5 + (int)(input[1] - 'A');
+            move->to = ((int)(input[0] - '1')) * 5 + (int)(input[1] - 'A');
             move->do_promote = false;
             return true;
         }
     }
 
-    if(input[2] < '0' || input[2] > '4') return false;
+    if(input[2] < '1' || input[2] > '5') return false;
     if(input[3] < 'A' || input[3] > 'E') return false;
     if(strlen(input) == 5 && input[4] != 'N') return false;
 
     move->is_drop = false;
-    move->piece = cur_board.field[((int)(input[0] - '0'))][(int)(input[1] - 'A')].type;
-    move->from = ((int)(input[0] - '0')) * 5 + (int)(input[1] - 'A');
-    move->to = ((int)(input[2] - '0')) * 5 + (int)(input[3] - 'A');
+    move->piece = cur_board.field[((int)(input[0] - '1'))][(int)(input[1] - 'A')].type;
+    move->from = ((int)(input[0] - '1')) * 5 + (int)(input[1] - 'A');
+    move->to = ((int)(input[2] - '1')) * 5 + (int)(input[3] - 'A');
     move->do_promote = (strlen(input) == 5 && input[4] == 'N') ? true : false;
 
     return true;

@@ -30,7 +30,26 @@ static void ai_copy_seed(const ai_seed* src, ai_seed* dest) {
 
 // ランダムな seed を作成する
 static void ai_generate_random_seed(ai_seed* seed, pcg64_state* rng) {
-    // ToDo: implement
+    // 乱数が欲しい場合は
+    // pcg64_random(rng)
+    // とすれば 0 ～ 2^64 - 1 の範囲で乱数が得られる
+
+    static uint8_t initial_table[8][9][5] = {
+        {{}},
+        {{}},
+        {{}},
+        {{}},
+        {{}},
+        {{}},
+        {{}},
+        {{}}
+    };
+
+    int size = sizeof(seed->table);
+    uint8_t* t = (uint8_t*)(seed->table);
+    for (int i = 0; i < size; ++i) {
+        t[i] = pcg64_random(rng);
+    }
 }
 
 // ai_seed をバイト列に書き込む
@@ -216,10 +235,8 @@ static int alpha_beta_min(ai_seed* seed, game_state state, bool is_first, int se
 }
 
 static move_type ai_decide_move(ai_seed* seed, game_state state, bool is_first) {
-    // ToDo: implement
-    // テスト用で書き換えてありますが特に意味はありません
     move_type move;
-    int search_depth = 5;
+    int search_depth = 7;
     int INF = 100000000;
     
     alpha_beta_max(seed, state, is_first, search_depth, -INF, INF, &move);
