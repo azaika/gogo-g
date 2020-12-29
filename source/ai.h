@@ -67,6 +67,7 @@ static int count_pieces(game_state state, piece_type type, bool is_first, bool i
 static int ai_evaluate(ai_seed* seed, game_state state, bool is_first) {
     int value = 0; // 評価値
 
+<<<<<<< HEAD
     //駒の価値は固定
     value += 110 * count_pieces(state, PIECE_FU, is_first, false, false); // 歩があったら評価値+ 110
     value += 810 * count_pieces(state, PIECE_GI, is_first, false, false); //銀があったら810
@@ -84,6 +85,48 @@ static int ai_evaluate(ai_seed* seed, game_state state, bool is_first) {
     value += 2000 * count_pieces(state, PIECE_HI, is_first, true, false); //持ち飛車があったら
     value += 50000 * count_pieces(state, PIECE_OU, is_first, false, false); //王があったら
     
+=======
+    //駒の価値　(初期値)について
+    value += 550 * count_pieces(state, PIECE_FU, is_first, false, false); // 歩があったら評価値+550
+    value += 4050 * count_pieces(state, PIECE_GI, is_first, false, false); //銀があったら810
+    value += 4550 * count_pieces(state, PIECE_KI, is_first, false, false); //金があったら
+    value += 6450 * count_pieces(state, PIECE_KK, is_first, false, false); //角があったら
+    value += 8350 * count_pieces(state, PIECE_HI, is_first, false, false); // 飛車があったら
+    value += 4450 * count_pieces(state, PIECE_FU, is_first, false, true); // と金があったら
+    value += 4650 * count_pieces(state, PIECE_GI, is_first, false, true); //成り銀があったら
+    value += 9900 * count_pieces(state, PIECE_KK, is_first, false, true); //馬があったら
+    value += 12000 * count_pieces(state, PIECE_HI, is_first, true, true); // 龍があったら
+    value += 750 * count_pieces(state, PIECE_FU, is_first, true, false); // 持ち歩があったら
+    value += 5500 * count_pieces(state, PIECE_GI, is_first, true, false); //持ち銀があったら
+    value += 6300 * count_pieces(state, PIECE_KI, is_first, true, false); //持ち金があったら
+    value += 7300 * count_pieces(state, PIECE_KK, is_first, true, false); //持ち角があったら
+    value += 10000 * count_pieces(state, PIECE_HI, is_first, true, false); //持ち飛車があったら
+    value += 250000 * count_pieces(state, PIECE_OU, is_first, false, false); //王があったら
+    value += 250000 * count_pieces(state, PIECE_OU, is_first, true, false); //王があったら
+
+
+    //相手玉と自分の駒の相対的な位置関係による評価値変動 (初期値)
+    //相手玉と自分の駒8種類について
+    // 歩 0
+    // 銀 1
+    // 金、と金、成り銀 2
+    // 角 3
+    // 飛車 4
+    // 馬 5
+    // 龍 6
+    // 自玉 7
+    uint8_t table[8][9][5] = {
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {}
+    }; // 0～255
+
+>>>>>>> 98a851d76d07a655c35810848ed2594b03a9e4aa
     coord_type p = get_coord(state[PIECE_OU * 2 + (is_first ? 1 : 0)]);
     int px = p % 5, py = p / 5;
 
