@@ -13,7 +13,7 @@
 struct gogo_controller_tag {
 	game_state* state;
 	game_state_hash* history;
-	ai_seed* seed;
+	ai_seed seed;
 	int turn;
 	int player_turn_parity;
 };
@@ -35,36 +35,35 @@ static void init_gogo(gogo_controller* gc, bool is_player_first) {
 		exit(EXIT_FAILURE);
 	}
 
-	FILE* file = fopen("seed.txt", "r");
+	FILE* file = fopen("seed.bin", "rb");
 	if (file == NULL) {
 		#ifdef DEBUG
-			gc->seed = (ai_seed*)malloc(sizeof(ai_seed));
 			pcg64_state* rng = (pcg64_state*)malloc(sizeof(pcg64_state));
 			pcg64_srandom_by_time(rng);
-			ai_generate_random_seed(gc->seed, rng);
+			ai_generate_random_seed(&gc->seed, rng);
 
 			free(rng);
 			return;
 		#else
-			fprintf(stderr, "failed to open 'seed.txt'.");
+			fprintf(stderr, "failed to open 'seed.bin'.\n");
 			exit(EXIT_SUCCESS);
 		#endif
 	}
 	// このサイズはよしなに変える
 	char buf[256];
-	fscanf(file, "%s", buf);
-	gc->seed = ai_deserialize_seed(buf);
-	if (gc->seed == NULL) {
-		fprintf(stderr, "failed to deserialize seed.\n");
+	size_t num_read = fread(buf, sizeof(uint8_t), sizeof(gc->seed.table), file);
+	if (num_read != sizeof(uint8_t) * sizeof(gc->seed.table)) {
+		fprintf(stderr, "failed to read 'seed.bin' (%zu bytes read).\n", num_read);
 		exit(EXIT_SUCCESS);
 	}
+
+	ai_deserialize_seed(buf, &gc->seed);
 
 	fclose(file);
 }
 
 static void destroy_gogo(gogo_controller* gc) {
 	free_game_state(gc->state);
-	free(gc->seed);
 	free(gc->history);
 }
 
@@ -117,7 +116,7 @@ static bool advance_turn(gogo_controller* gc) {
 	}
 	else {
 		// cpu の手番
-		move = ai_decide_move(gc->seed, *gc->state, gc->player_turn_parity == 1);
+		move = ai_decide_move(&gc->seed, *gc->state, gc->player_turn_parity == 1);
 
 		if (!validate_move(*gc->state, move, is_first_player_turn(gc))) {
 			#ifdef DEBUG

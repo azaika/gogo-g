@@ -23,9 +23,9 @@ int main() {
 
     size_t len = strlen(buf);
 
-    FILE* file = fopen("result", "wb");
+    FILE* file = fopen("result.bin", "wb");
     if (file == NULL) {
-        fprintf(stderr, "failed to open 'result'.\n");
+        fprintf(stderr, "failed to open 'result.bin'.\n");
         return 0;
     }
 
