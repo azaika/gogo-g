@@ -163,7 +163,7 @@ static void ga_mutate_seed(ai_seed* seed, pcg64_state* rng) {
 
     int kind = pcg64_random(rng) % 8;
     int size = sizeof(seed->table[kind]);
-    uint8_t* t = seed->table[kind];
+    uint8_t* t = (uint8_t*)seed->table[kind];
     for (int i = 0; i < size; ++i) {
         t[i] = pcg64_random(rng);
     }
@@ -185,7 +185,7 @@ static void ga_select_next(int n, ai_seed cur[], ai_seed next[], pcg64_state* rn
     for (int i = 0; i < tournament_size; ++i) {
         random_select(n, tournament_size, cand_idx, rng);
         for (int j = 0; j < tournament_size; ++j) {
-            copy_seeds(&cur[cand_idx[i]], &cand[i]);
+            ai_copy_seed(&cur[cand_idx[i]], &cand[i]);
         }
 
         ga_do_tournament(tournament_size, cand, num_tops, winners);
