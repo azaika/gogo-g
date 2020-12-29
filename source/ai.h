@@ -179,8 +179,6 @@ static int alpha_beta_min(ai_seed* seed, game_state state, bool is_first, int se
 
 static int alpha_beta_max(ai_seed* seed, game_state state, bool is_first, int search_depth, int alpha, int beta, move_type* best_move, hash_table table){
     int value;
-    bool is_large_number = false;
-
     if(search_depth <= 0){
         return ai_evaluate(seed, state, is_first);
     }
@@ -189,11 +187,8 @@ static int alpha_beta_max(ai_seed* seed, game_state state, bool is_first, int se
     int move_number = 0;
     all_possible_moves(state, possible_moves, &move_number, is_first);
 
-    if(move_number > SEARCH_MEASURE){
-        is_large_number = true;
-        search_depth -= 1;
-    }
-
+    search_depth -= move_number / SEARCH_MEASURE;
+    
     *best_move = possible_moves[0];
     
     for(int i = 0; i < move_number; i++){
@@ -207,14 +202,12 @@ static int alpha_beta_max(ai_seed* seed, game_state state, bool is_first, int se
         int value = 0;
         game_state_hash hash_next = into_hash(next_state);
 
-        if(is_large_number){
-            value = hash_search_value(table, hash_next); 
-            if(hash_search_depth(table, hash_next) <= search_depth){
-                value = -1;
-            }            
+        value = hash_search_value(table, hash_next);
+        if(hash_search_depth(table, hash_next) <= search_depth){
+            value == -1;
         }
         
-        if(value == -1 || (!is_large_number)){
+        if(value == -1){
             value = alpha_beta_min(seed, next_state, !is_first, search_depth-1, alpha, beta, &best_move_next, table);
             hash_insert(table, hash_next, search_depth, value);
         }
@@ -232,7 +225,6 @@ static int alpha_beta_max(ai_seed* seed, game_state state, bool is_first, int se
 
 static int alpha_beta_min(ai_seed* seed, game_state state, bool is_first, int search_depth, int alpha, int beta, move_type* best_move, hash_table table) {
     int value;
-    bool is_large_number = false;
     if(search_depth <= 0){
         return ai_evaluate(seed, state, is_first);
     }
@@ -241,10 +233,7 @@ static int alpha_beta_min(ai_seed* seed, game_state state, bool is_first, int se
     int move_number = 0;
     all_possible_moves(state, possible_moves, &move_number, is_first);
 
-    if(move_number > SEARCH_MEASURE){
-        is_large_number = true;
-        search_depth -= 1;
-    }
+    search_depth -= move_number / SEARCH_MEASURE;
 
     *best_move = possible_moves[0];
 
@@ -260,14 +249,13 @@ static int alpha_beta_min(ai_seed* seed, game_state state, bool is_first, int se
         
         game_state_hash hash_next = into_hash(next_state);
 
-        if(is_large_number){
-            value = hash_search_value(table, hash_next);      
-            if(hash_search_depth(table, hash_next) <= search_depth){
-                value = -1;
-            }      
-        }
         
-        if(value == -1 || (!is_large_number)){
+        value = hash_search_value(table, hash_next);      
+        if(hash_search_depth(table, hash_next) <= search_depth){
+                value = -1;
+        }      
+                
+        if(value == -1){
             value = alpha_beta_min(seed, next_state, !is_first, search_depth-1, alpha, beta, &best_move_next, table);
             hash_insert(table, hash_next, search_depth, value);
         }
@@ -285,7 +273,7 @@ static int alpha_beta_min(ai_seed* seed, game_state state, bool is_first, int se
 
 static move_type ai_decide_move(ai_seed* seed, game_state state, bool is_first, hash_table table) {
     move_type move;
-    int search_depth = 7;
+    int search_depth = 8;
     int INF = 100000000;
 
     alpha_beta_max(seed, state, !is_first, search_depth, -INF, INF, &move, table);
