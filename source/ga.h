@@ -105,7 +105,8 @@ static void ga_do_tournament(int size, ai_seed challengers[], int k, int winners
     free(points);
 }
 
-static void random_select(int n, ai_seed from[], int k, ai_seed result[], pcg64_state* rng) {
+// O(k^2)
+static void random_select(int n, int k, int result[], pcg64_state* rng) {
     static bool used[1024];
     memset(used, 0, sizeof(used));
 
@@ -122,19 +123,53 @@ static void random_select(int n, ai_seed from[], int k, ai_seed result[], pcg64_
             ++cur;
         }
 
-        ai_copy_seed(&from[cur], &result[i]);
+        result[i] = cur;
         used[cur] = true;
     }
 }
 
+static uint8_t ga_clamp(int x) {
+    return (
+        x >= 256 ? 255 :
+        x < 0 ? 0 :
+        x
+    );
+}
+
 static void ga_cross_seeds(const ai_seed* s1, const ai_seed* s2, ai_seed* res, pcg64_state* rng) {
-    // ToDo: implement
+    assert(sizeof(s1->table) <= 512);
+
+    int size = sizeof(s1->table);
+    static int from_s2[512];
+    random_select(size, size / 2, from_s2, rng);
+    
+    ai_copy_seed(s1, res);
+
+    uint8_t* t = (uint8_t*)(res->table);
+    for (int i = 0; i < size / 2; ++i) {
+        t[from_s2[i]] = ((uint8_t*)(s2->table))[from_s2[i]];
+    }
+
+    for (int i = 0; i < size; ++i) {
+        t[i] = ga_clamp(t[i] + (int)(pcg64_random(rng) % 20) - 10);
+    }
 }
 
 static void ga_mutate_seed(ai_seed* seed, pcg64_state* rng) {
-    // ToDo: implement
+    // 1/30 の確率
+    if (pcg64_random(rng) % 30 != 0) {
+        return;
+    }
+
+    int kind = pcg64_random(rng) % 8;
+    int size = sizeof(seed->table[kind]);
+    uint8_t* t = seed->table[kind];
+    for (int i = 0; i < size; ++i) {
+        t[i] = pcg64_random(rng);
+    }
 }
 
+// トーナメント方式を繰り返して次世代の遺伝子を選ぶ
 static void ga_select_next(int n, ai_seed cur[], ai_seed next[], pcg64_state* rng) {
     const int num_tops = 7;
     const int tournament_size = 20;
@@ -145,10 +180,15 @@ static void ga_select_next(int n, ai_seed cur[], ai_seed next[], pcg64_state* rn
 
     int num_adopted = 0;
 
-    static ai_seed candidate[512];
+    static ai_seed cand[512];
+    static int cand_idx[512];
     for (int i = 0; i < tournament_size; ++i) {
-        random_select(n, cur, tournament_size, candidate, rng);
-        ga_do_tournament(tournament_size, candidate, num_tops, winners);
+        random_select(n, tournament_size, cand_idx, rng);
+        for (int j = 0; j < tournament_size; ++j) {
+            copy_seeds(&cur[cand_idx[i]], &cand[i]);
+        }
+
+        ga_do_tournament(tournament_size, cand, num_tops, winners);
 
         // 1 ～ 3 位はそのまま採用
         ai_copy_seed(&cur[winners[0]], &next[i * num_tops]);
