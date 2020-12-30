@@ -11,6 +11,8 @@
                 "-g",
                 "${workspaceFolder}/source/main.c",
                 "-DDEBUG",
+                "-Wall",
+                "-Wextra",
                 "-o",
                 "${workspaceFolder}/gogo.out"
             ],
@@ -33,6 +35,8 @@
                 "-g",
                 "${workspaceFolder}/source/learning.c",
                 "-DDEBUG",
+                "-Wall",
+                "-Wextra",
                 "-o",
                 "${workspaceFolder}/learning.out"
             ],
@@ -54,6 +58,8 @@
             "args": [
                 "-g",
                 "${workspaceFolder}/source/main.c",
+                "-Wall",
+                "-Wextra",
                 "-O3",
                 "-o",
                 "${workspaceFolder}/gogo_opt.out"
@@ -64,6 +70,7 @@
             "problemMatcher": [
                 "$gcc"
             ],
+            "group": "build"
         },
         {
             "type": "shell",
@@ -72,6 +79,8 @@
             "args": [
                 "-g",
                 "${workspaceFolder}/source/learning.c",
+                "-Wall",
+                "-Wextra",
                 "-O3",
                 "-o",
                 "${workspaceFolder}/learning_opt.out"
@@ -82,6 +91,7 @@
             "problemMatcher": [
                 "$gcc"
             ],
+            "group": "build"
         }
     ]
 }

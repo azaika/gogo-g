@@ -30,21 +30,6 @@ static void ai_copy_seed(const ai_seed* src, ai_seed* dest) {
 
 // ランダムな seed を作成する
 static void ai_generate_random_seed(ai_seed* seed, pcg64_state* rng) {
-    // 乱数が欲しい場合は
-    // pcg64_random(rng)
-    // とすれば 0 ～ 2^64 - 1 の範囲で乱数が得られる
-
-    static uint8_t initial_table[8][9][5] = {
-        {{}},
-        {{}},
-        {{}},
-        {{}},
-        {{}},
-        {{}},
-        {{}},
-        {{}}
-    };
-
     int size = sizeof(seed->table);
     uint8_t* t = (uint8_t*)(seed->table);
     for (int i = 0; i < size; ++i) {
@@ -81,14 +66,16 @@ static int count_pieces(game_state state, piece_type type, bool is_first, bool i
     return ret;
 }
 
+#define INF (200000000)
+
 // 評価関数
 // is_first : 先手番のターンかどうか
 static int ai_evaluate(ai_seed* seed, game_state state, bool is_first) {
     if (check_wins(state) == (is_first ? 1 : 2)) {
-        return 200000000;
+        return INF;
     }
     if (check_wins(state) == (is_first ? 2 : 1)) {
-        return -200000000;
+        return -INF;
     }
 
     int value = 0; // 評価値
@@ -156,7 +143,7 @@ static int ai_evaluate(ai_seed* seed, game_state state, bool is_first) {
     return value;
 }
 
-static void all_possible_moves(game_state state, move_type* possible_moves, int* move_number, bool is_first){
+static void all_possible_moves(game_state state, move_type* possible_moves, int* num_moves, bool is_first){
     int moves_index = 0;
     for(int i = 0; i < 12; i++){
         if(is_first_ones(state[i]) == is_first){
@@ -176,37 +163,31 @@ static void all_possible_moves(game_state state, move_type* possible_moves, int*
             }
         }
     }
-    *move_number = moves_index;
+    *num_moves = moves_index;
 }
 
-static int alpha_beta_min(ai_seed* seed, game_state state, bool is_first, int search_depth, int alpha, int beta, move_type* best_move);
+static int alpha_beta_min(ai_seed* seed, game_state state, bool is_first, int search_depth, int alpha, int beta);
 
-static int alpha_beta_max(ai_seed* seed, game_state state, bool is_first, int search_depth, int alpha, int beta, move_type* best_move){
-    int value;
-    if(search_depth == 0){
-        return ai_evaluate(seed, state, is_first);
-    }
-    if(abs(ai_evaluate(seed,state, is_first)) == 200000000){
-        return ai_evaluate(seed, state, is_first);
+static int alpha_beta_max(ai_seed* seed, game_state state, bool is_first, int search_depth, int alpha, int beta){
+    int value = ai_evaluate(seed, state, is_first);
+    if (search_depth == 0 || abs(value) == INF) {
+        return value;
     }
 
     move_type possible_moves[200];
-    int move_number = 0;
-    all_possible_moves(state, possible_moves, &move_number, is_first);
-    *best_move = possible_moves[0];
+    int num_moves = 0;
+    all_possible_moves(state, possible_moves, &num_moves, is_first);
     
-    for(int i = 0; i < move_number; i++){
-        game_state next_state;
-        for(int j = 0; j < 12; j++){
-            next_state[j] = state[j];
-        }
+    game_state next_state;
+    for(int i = 0; i < num_moves; i++) {
+        copy_game_state(next_state, state);
         write_move(next_state, possible_moves[i], is_first);
-        move_type best_move_next;
-        value = alpha_beta_min(seed, next_state, !is_first, search_depth-1, alpha, beta, &best_move_next);
-        if(value > alpha){
+        
+        value = alpha_beta_min(seed, next_state, !is_first, search_depth-1, alpha, beta);
+
+        if (value > alpha) {
             alpha = value;
-            *best_move = possible_moves[i];
-            if(alpha >= beta){
+            if (alpha >= beta) {
                 return beta;
             }
         }
@@ -214,33 +195,26 @@ static int alpha_beta_max(ai_seed* seed, game_state state, bool is_first, int se
     return alpha;
 }
 
-static int alpha_beta_min(ai_seed* seed, game_state state, bool is_first, int search_depth, int alpha, int beta, move_type* best_move) {
-    int value;
-    if(search_depth == 0){
-        return ai_evaluate(seed, state, is_first);
-    }
-
-    if(abs(ai_evaluate(seed,state, is_first)) == 200000000){
-        return ai_evaluate(seed, state, is_first);
+static int alpha_beta_min(ai_seed* seed, game_state state, bool is_first, int search_depth, int alpha, int beta) {
+    int value = ai_evaluate(seed, state, is_first);
+    if (search_depth == 0 || abs(value) == INF) {
+        return value;
     }
 
     move_type possible_moves[200];
-    int move_number = 0;
-    all_possible_moves(state, possible_moves, &move_number, is_first);
-    *best_move = possible_moves[0];
+    int num_moves = 0;
+    all_possible_moves(state, possible_moves, &num_moves, is_first);
 
-    for(int i = 0; i < move_number; i++){
-        game_state next_state;
-        for(int j = 0; j < 12; j++){
-            next_state[j] = state[j];
-        }
+    game_state next_state;
+    for (int i = 0; i < num_moves; i++) {
+        copy_game_state(next_state, state);
         write_move(next_state, possible_moves[i], is_first);
-        move_type best_move_next;
-        value = alpha_beta_max(seed, next_state, !is_first, search_depth-1, alpha, beta, &best_move_next);
-        if(value < beta){
-            beta = value;            
-            *best_move = possible_moves[i];
-            if(beta <= alpha){
+        
+        value = alpha_beta_max(seed, next_state, !is_first, search_depth-1, alpha, beta);
+
+        if (value < beta) {
+            beta = value;
+            if (beta <= alpha) {
                 return alpha;
             }
         }
@@ -248,21 +222,44 @@ static int alpha_beta_min(ai_seed* seed, game_state state, bool is_first, int se
     return beta;
 }
 
-static move_type alpha_beta_search(ai_seed* seed, game_state state, bool is_first, int search_depth, bool* found_win_path) {
-    move_type move;
-    int INF = 100000000;    
-    *found_win_path = (alpha_beta_max(seed, state, is_first, search_depth, -INF, INF, &move) == 200000000);
-    return move;
+static move_type ai_decide_move(ai_seed* seed, game_state state, bool is_first, int search_depth) {
+    static move_type possible_moves[200];
+
+    int num_moves = 0;
+    all_possible_moves(state, possible_moves, &num_moves, is_first);
+
+    int best_idx = 0;
+    game_state next_state;
+    // 反復しながら alpha_beta_max をする
+    // ただし最善手を記録する
+    for (int depth = 0; depth <= search_depth - 1; ++depth) {
+        best_idx = 0;
+        
+        int alpha = -INF/2, beta = INF/2;
+
+        for (int i = 0; i < num_moves; i++) {
+            copy_game_state(next_state, state);
+            write_move(next_state, possible_moves[i], is_first);
+            int value = alpha_beta_min(seed, next_state, !is_first, depth, alpha, beta);
+            if (value > alpha) {
+                alpha = value;
+                best_idx = i;
+                
+                if(value >= beta) {
+                    return possible_moves[best_idx];
+                }
+            }
+        }
+
+        // 反復するときは前の最善手から始める
+        move_type tmp = possible_moves[0];
+        possible_moves[0] = possible_moves[best_idx];
+        possible_moves[best_idx] = tmp;
+    }
+    
+    return possible_moves[best_idx];
 }
 
-static move_type ai_decide_move(ai_seed* seed, game_state state, bool is_first, int max_search_depth){
-    move_type move;
-    bool found_win_path = false;
-    for(int search_depth = 1; search_depth < max_search_depth; search_depth++){
-        move = alpha_beta_search(seed, state, is_first, search_depth, &found_win_path);
-        if(found_win_path == true) break;
-    }
-    return move;
-}
+#undef INF
 
 #endif // GOGO_HEADER_AI_H

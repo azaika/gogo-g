@@ -1,4 +1,4 @@
-#include <stdio.h>
+#pragma GCC diagnostic ignored "-Wunused-function"
 
 #include "game_state.h"
 #include "gogo_controller.h"
