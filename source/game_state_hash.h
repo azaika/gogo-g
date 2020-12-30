@@ -7,17 +7,18 @@
 #include <stdlib.h>
 #define TABLE_NUMBER 10000
 
-//alpha-betaの枝刈りのために二分探索木を作りました
+//alpha-betaの枝刈りのためにhash tableを作りました
 
 typedef struct node
 {
     game_state_hash hash;
     int depth;
     int value;
+    move_type move;
     struct node *next;
 } Node;
 
-static void chain_insert(Node **node, game_state_hash hash, int depth, int value)
+static void chain_insert(Node **node, game_state_hash hash, int depth, int value, move_type move)
 {
     if ((*node) == NULL)
     {
@@ -25,16 +26,18 @@ static void chain_insert(Node **node, game_state_hash hash, int depth, int value
         (*node)->hash = hash;
         (*node)->depth = depth;
         (*node)->value = value;
+        (*node)->move = move;
         (*node)->next = NULL;
     }
     else if ((*node)->hash == hash)
     {
         (*node)->depth = depth;
         (*node)->value = value;
+        (*node)->move = move;
     }
     else if ((*node)->next != NULL)
     {
-        chain_insert(&((*node)->next), hash, depth, value);
+        chain_insert(&((*node)->next), hash, depth, value, move);
     }
     else
     {
@@ -43,6 +46,7 @@ static void chain_insert(Node **node, game_state_hash hash, int depth, int value
         (*node)->hash = hash;
         (*node)->depth = depth;
         (*node)->value = value;
+        (*node)->move = move;
         newNode->next = NULL;
         (*node)->next = newNode;
     }
@@ -103,26 +107,48 @@ static int chain_search_depth(Node *node, game_state_hash hash)
     }
 }
 
+static move_type chain_search_move(Node *node, game_state_hash hash)
+{
+    assert(node != NULL);
+    if (node->hash == hash)
+    {
+        return node->move;
+    }
+    else
+    {
+        return chain_search_move(node->next, hash);
+    }
+}
+
 static int return_hash(game_state_hash hash)
 {
     return hash % TABLE_NUMBER;
 }
 
-typedef Node*(hash_table)[TABLE_NUMBER];
+typedef Node *(hash_table)[TABLE_NUMBER];
 
-static void hash_insert(hash_table table, game_state_hash hash, int depth, int value){
+static void hash_insert(hash_table table, game_state_hash hash, int depth, int value, move_type move)
+{
     int key = return_hash(hash);
-    chain_insert(&table[key], hash, depth, value);
+    chain_insert(&table[key], hash, depth, value, move);
 }
 
-static int hash_search_value(hash_table table, game_state_hash hash){
+static int hash_search_value(hash_table table, game_state_hash hash)
+{
     int key = return_hash(hash);
     return chain_search_value(table[key], hash);
 }
 
-static int hash_search_depth(hash_table table, game_state_hash hash){
+static int hash_search_depth(hash_table table, game_state_hash hash)
+{
     int key = return_hash(hash);
     return chain_search_depth(table[key], hash);
+}
+
+static move_type hash_search_move(hash_table table, game_state_hash hash)
+{
+    int key = return_hash(hash);
+    return chain_search_move(table[key], hash);
 }
 
 #endif
