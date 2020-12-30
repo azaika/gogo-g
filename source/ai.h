@@ -186,6 +186,9 @@ static int alpha_beta_max(ai_seed* seed, game_state state, bool is_first, int se
     if(search_depth == 0){
         return ai_evaluate(seed, state, is_first);
     }
+    if(abs(ai_evaluate(seed,state, is_first)) == 200000000){
+        return ai_evaluate(seed, state, is_first);
+    }
 
     move_type possible_moves[200];
     int move_number = 0;
@@ -217,6 +220,10 @@ static int alpha_beta_min(ai_seed* seed, game_state state, bool is_first, int se
         return ai_evaluate(seed, state, is_first);
     }
 
+    if(abs(ai_evaluate(seed,state, is_first)) == 200000000){
+        return ai_evaluate(seed, state, is_first);
+    }
+
     move_type possible_moves[200];
     int move_number = 0;
     all_possible_moves(state, possible_moves, &move_number, is_first);
@@ -241,12 +248,20 @@ static int alpha_beta_min(ai_seed* seed, game_state state, bool is_first, int se
     return beta;
 }
 
-static move_type ai_decide_move(ai_seed* seed, game_state state, bool is_first) {
+static move_type alpha_beta_search(ai_seed* seed, game_state state, bool is_first, int search_depth, bool* found_win_path) {
     move_type move;
-    int search_depth = 6;
-    int INF = 100000000;
-    
-    alpha_beta_max(seed, state, is_first, search_depth, -INF, INF, &move);
+    int INF = 100000000;    
+    *found_win_path = (alpha_beta_max(seed, state, is_first, search_depth, -INF, INF, &move) == 200000000);
+    return move;
+}
+
+static move_type ai_decide_move(ai_seed* seed, game_state state, bool is_first, int max_search_depth){
+    move_type move;
+    bool found_win_path = false;
+    for(int search_depth = 1; search_depth < max_search_depth; search_depth++){
+        move = alpha_beta_search(seed, state, is_first, search_depth, &found_win_path);
+        if(found_win_path == true) break;
+    }
     return move;
 }
 
