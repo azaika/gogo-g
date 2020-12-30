@@ -199,6 +199,10 @@ static bool is_checkmate(game_state state, bool is_first){
     board_type board;
     make_board(state, &board);
 
+    if (!is_check(&board, !is_first)) {
+        return false;
+    }
+
     piece_type hand_type = PIECE_EMPTY;
     for(int i = 0; i < 11; i++){
         if(board.hand[!is_first][i] != PIECE_EMPTY){
@@ -226,62 +230,58 @@ static bool is_checkmate(game_state state, bool is_first){
     game_state new_state;
     board_type new_board;
 
-    if (!is_check(&board, !is_first)) {
-        return false;
-    } else {
-        for (int i = 0; i < 8; i++) {
-            int now_x = my_king_x + dx[i];
-            int now_y = my_king_y + dy[i];
-            if(now_x < 0 || 4 < now_x || now_y < 0 || 4 < now_y) {
+    for (int i = 0; i < 8; i++) {
+        int now_x = my_king_x + dx[i];
+        int now_y = my_king_y + dy[i];
+        if(now_x < 0 || 4 < now_x || now_y < 0 || 4 < now_y) {
+            continue;
+        }
+
+        move_type king_move;
+        king_move.is_drop = false;
+        king_move.piece = PIECE_OU;
+        king_move.to = now_y * 5 + now_x;
+        king_move.from = my_king_y * 5 + my_king_x;
+        king_move.do_promote = false;
+        //王を動かして防げるか
+        if (able_to_move(&board, king_move, is_first)) {
+            copy_game_state(new_state, state);
+            write_move(new_state, king_move, is_first);
+            make_board(new_state, &new_board);
+            if (!is_check(&new_board, !is_first)) {
+                return false;
+            }
+        }
+    }
+
+    if (hand_type == PIECE_EMPTY) {
+        return true;
+    }
+
+    // 駒を打って防げるか
+    for (int y = 0; y < 5; ++y) {
+        for (int x = 0; x < 5; ++x) {
+            if (board.field[y][x].type != PIECE_EMPTY) {
                 continue;
             }
 
-            move_type king_move;
-            king_move.is_drop = false;
-            king_move.piece = PIECE_OU;
-            king_move.to = now_x * 5 + now_y;
-            king_move.from = my_king_x * 5 + my_king_y;
-            king_move.do_promote = false;
-            //王を動かして防げるか
-            if (able_to_move(&board, king_move, is_first)) {
-                copy_game_state(new_state, state);
-                write_move(new_state, king_move, is_first);
-                make_board(new_state, &new_board);
-                if (!is_check(&new_board, !is_first)) {
-                    return false;
-                }
+            move_type guard_move;
+            guard_move.is_drop = true;
+            guard_move.piece = hand_type;
+            guard_move.to = y * 5 + x;
+            guard_move.from = TEGOMA;
+            guard_move.do_promote = false;
+
+            copy_game_state(new_state, state);
+            write_move(new_state, guard_move, is_first);
+            make_board(new_state, &new_board);
+            if ((!validate_twopawn(&new_board)) && (!is_check(&new_board, !is_first))) {
+                return false;
             }
         }
-
-        if (hand_type == PIECE_EMPTY) {
-            return true;
-        }
-
-        // 駒を打って防げるか
-        for (int y = 0; y < 5; ++y) {
-            for (int x = 0; x < 5; ++x) {
-                if (board.field[y][x].type != PIECE_EMPTY) {
-                    continue;
-                }
-
-                move_type guard_move;
-                guard_move.is_drop = true;
-                guard_move.piece = hand_type;
-                guard_move.to = y * 5 + x;
-                guard_move.from = TEGOMA;
-                guard_move.do_promote = false;
-
-                copy_game_state(new_state, state);
-                write_move(new_state, guard_move, is_first);
-                make_board(new_state, &new_board);
-                if ((!validate_twopawn(&new_board)) && (!is_check(&new_board, !is_first))) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
     }
+
+    return true;
 }
 
 // どちらかが王を取って勝っているかどうかを判定する
