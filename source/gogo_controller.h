@@ -21,6 +21,7 @@ struct gogo_controller_tag {
 typedef struct gogo_controller_tag gogo_controller;
 
 #define TURN_LIMIT (150)
+#define MAX_SEARCH_DEPTH (6)
 
 static void init_gogo(gogo_controller* gc, bool is_player_first) {
 	assert(gc != NULL);
@@ -103,7 +104,7 @@ static bool advance_turn(gogo_controller* gc) {
 	}
 	else {
 		// cpu の手番
-		move = ai_decide_move(&gc->seed, *gc->state, gc->turn % 2 == 0);
+		move = ai_decide_move(&gc->seed, *gc->state, gc->turn % 2 == 0, MAX_SEARCH_DEPTH);
 
 		print_move(move);
 
