@@ -73,6 +73,11 @@ static bool is_first_player_turn(gogo_controller* gc) {
 	return gc->turn % 2 == gc->player_turn_parity;
 }
 
+static bool is_player_first(gogo_controller* gc) {
+	assert(gc != NULL);
+	return gc->player_turn_parity == 0;
+}
+
 // 勝敗が決しているかを返す
 static bool advance_turn(gogo_controller* gc) {
 	assert(gc != NULL);
@@ -119,27 +124,28 @@ static bool advance_turn(gogo_controller* gc) {
 
 	write_move(*gc->state, move, gc->turn % 2 == 0);
 	gc->history[gc->turn] = into_hash(*gc->state);
-	++gc->turn;
 
-	int sennichite = check_sennichite(gc->history, gc->turn, gc->turn % 2 == 0);
+	int sennichite = check_sennichite(gc->history, gc->turn + 1, gc->turn % 2 == 0);
 	if (sennichite) {
-		printf(sennichite == 1 ? "You Win\n" : "You Lose\n");
+		printf((sennichite == 1) == is_first_player_turn(gc) ? "You Win\n" : "You Lose\n");
 		return false;
 	}
 
 	int wins = check_wins(*gc->state);
 	if (wins) {
-		printf(wins == 1 ? "You Win\n" : "You Lose\n");
+		printf((wins == 1) == is_first_player_turn(gc) ? "You Win\n" : "You Lose\n");
 		return false;
 	}
 	else if (is_checkmate(*gc->state, gc->turn % 2 == 0)) {
-		printf(!is_first_player_turn(gc) ? "You Win\n" : "You Lose\n");
+		printf(!is_player_first(gc) ? "You Win\n" : "You Lose\n");
 		return false;
 	}
 	else if (is_checkmate(*gc->state, gc->turn % 2 == 1)) {
-		printf(is_first_player_turn(gc) ? "You Win\n" : "You Lose\n");
+		printf(is_player_first(gc) ? "You Win\n" : "You Lose\n");
 		return false;
 	}
+
+	++gc->turn;
 
 	return true;
 }
