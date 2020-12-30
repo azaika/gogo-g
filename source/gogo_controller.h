@@ -54,7 +54,7 @@ static void init_gogo(gogo_controller* gc, bool is_player_first) {
 	char buf[512];
 	size_t num_read = fread(buf, sizeof(uint8_t), sizeof(gc->seed.table), file);
 	if (num_read != sizeof(uint8_t) * sizeof(gc->seed.table)) {
-		fprintf(stderr, "failed to read 'seed.bin' (%zu bytes read).\n", num_read);
+		fprintf(stderr, "failed to read 'seed.bin' (%zu/%zu bytes read).\n", num_read, sizeof(gc->seed.table));
 		exit(EXIT_SUCCESS);
 	}
 
