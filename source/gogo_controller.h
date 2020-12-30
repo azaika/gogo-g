@@ -13,6 +13,7 @@
 struct gogo_controller_tag {
 	game_state* state;
 	game_state_hash* history;
+	hash_table table;
 	ai_seed seed;
 	int turn;
 	int player_turn_parity;
@@ -33,6 +34,10 @@ static void init_gogo(gogo_controller* gc, bool is_player_first) {
 	if (gc->history == NULL) {
 		fprintf(stderr, "memory allocation error in init_game()\n");
 		exit(EXIT_FAILURE);
+	}
+
+	for(int i = 0; i < TABLE_NUMBER; i++){
+		gc->table[i] = (Node*)malloc(sizeof(Node));
 	}
 
 	FILE* file = fopen("seed.bin", "rb");
@@ -103,12 +108,13 @@ static bool advance_turn(gogo_controller* gc) {
 	}
 	else {
 		// cpu の手番
-		move = ai_decide_move(&gc->seed, *gc->state, gc->turn % 2 == 0);
+		move = ai_decide_move(&gc->seed, *gc->state, gc->turn % 2 == 0, gc->table);
 
 		print_move(move);
 
 		if (!validate_move(*gc->state, move, gc->turn % 2 == 0)) {
 			#ifdef DEBUG
+			print_move(move);
 			fprintf(stderr, "invalid move by AI\n");
 			#endif
 			printf("You Win\n");
