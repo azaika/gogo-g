@@ -241,12 +241,18 @@ static int alpha_beta_min(ai_seed* seed, game_state state, bool is_first, int se
     return beta;
 }
 
-static move_type ai_decide_move(ai_seed* seed, game_state state, bool is_first) {
+static move_type alpha_beta_search(ai_seed* seed, game_state state, bool is_first, int search_depth) {
     move_type move;
-    int search_depth = 6;
-    int INF = 100000000;
-    
+    int INF = 100000000;    
     alpha_beta_max(seed, state, is_first, search_depth, -INF, INF, &move);
+    return move;
+}
+
+static move_type ai_decide_move(ai_seed* seed, game_state state, bool is_first, int max_search_depth){
+    move_type move;
+    for(int search_depth = 1; search_depth < max_search_depth; search_depth++){
+        move = alpha_beta_search(seed, state, is_first, search_depth);
+    }
     return move;
 }
 
