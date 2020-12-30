@@ -50,7 +50,7 @@ static void init_gogo(gogo_controller* gc, bool is_player_first) {
 		#endif
 	}
 	// このサイズはよしなに変える
-	char buf[256];
+	char buf[512];
 	size_t num_read = fread(buf, sizeof(uint8_t), sizeof(gc->seed.table), file);
 	if (num_read != sizeof(uint8_t) * sizeof(gc->seed.table)) {
 		fprintf(stderr, "failed to read 'seed.bin' (%zu bytes read).\n", num_read);
@@ -129,6 +129,14 @@ static bool advance_turn(gogo_controller* gc) {
 	int wins = check_wins(*gc->state);
 	if (wins) {
 		printf(wins == 1 ? "You Win\n" : "You Lose\n");
+		return false;
+	}
+	else if (is_checkmate(*gc->state, gc->turn % 2 == 0)) {
+		printf(!is_first_player_turn(gc) ? "You Win\n" : "You Lose\n");
+		return false;
+	}
+	else if (is_checkmate(*gc->state, gc->turn % 2 == 1)) {
+		printf(is_first_player_turn(gc) ? "You Win\n" : "You Lose\n");
 		return false;
 	}
 

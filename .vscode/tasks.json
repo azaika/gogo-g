@@ -5,7 +5,7 @@
     "tasks": [
         {
             "type": "shell",
-            "label": "C: gcc build main.c (DEBUG)",
+            "label": "gcc build main.c (DEBUG)",
             "command": "/usr/bin/gcc",
             "args": [
                 "-g",
@@ -27,7 +27,7 @@
         },
         {
             "type": "shell",
-            "label": "C: gcc build learning.c (DEBUG)",
+            "label": "gcc build learning.c (DEBUG)",
             "command": "/usr/bin/gcc",
             "args": [
                 "-g",
@@ -46,6 +46,42 @@
                 "kind": "build",
                 "isDefault": true
             },
+        },
+        {
+            "type": "shell",
+            "label": "gcc build main.c (RELEASE)",
+            "command": "/usr/bin/gcc",
+            "args": [
+                "-g",
+                "${workspaceFolder}/source/main.c",
+                "-O3",
+                "-o",
+                "${workspaceFolder}/gogo_opt.out"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+        },
+        {
+            "type": "shell",
+            "label": "gcc build learning.c (RELEASE)",
+            "command": "/usr/bin/gcc",
+            "args": [
+                "-g",
+                "${workspaceFolder}/source/learning.c",
+                "-O3",
+                "-o",
+                "${workspaceFolder}/learning_opt.out"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
         }
     ]
 }
