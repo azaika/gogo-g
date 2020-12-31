@@ -18,7 +18,7 @@ int main() {
     
     printf("generated initial seeds\n");
 
-    ga_advance_turn(n, seeds, 0);
+    ga_advance_turn(n, seeds, 1);
 
     printf("selecting top seeds...\n");
 

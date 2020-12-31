@@ -33,7 +33,7 @@ static int ga_battle(ai_seed* s1, ai_seed* s2, bool is_s1_first) {
     int turn = 0;
     move_type move;
     while (turn < TURN_LIMIT) {
-        move = ai_decide_move((turn % 2 == 0 ? s1 : s2), *state, turn % 2 == 0, 2);
+        move = ai_decide_move((turn % 2 == 0 ? s1 : s2), *state, turn % 2 == 0, 3);
 
         write_move(*state, move, turn % 2 == 0);
         history[turn] = into_hash(*state);
