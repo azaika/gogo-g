@@ -143,29 +143,6 @@ static int ai_evaluate(ai_seed* seed, game_state state, bool is_first) {
     return value;
 }
 
-static void all_possible_moves(game_state state, move_type* possible_moves, int* num_moves, bool is_first){
-    int moves_index = 0;
-    for(int i = 0; i < 12; i++){
-        if(is_first_ones(state[i]) == is_first){
-            for(coord_type j = 0; j < 25; j++){
-                move_type move_tmp;
-                move_tmp.is_drop = (get_coord(state[i]) == TEGOMA);
-                move_tmp.piece = (piece_type)((i / 2) % 6);
-                move_tmp.from = get_coord(state[i]);
-                move_tmp.to = j;
-                for(int k = 0; k <= 1; k++){
-                    move_tmp.do_promote = k;
-                    if(validate_move(state, move_tmp, is_first)){
-                        possible_moves[moves_index] = move_tmp;
-                        moves_index++;
-                    }
-                }
-            }
-        }
-    }
-    *num_moves = moves_index;
-}
-
 static int alpha_beta_min(ai_seed* seed, game_state state, bool is_first, int search_depth, int alpha, int beta);
 
 static int alpha_beta_max(ai_seed* seed, game_state state, bool is_first, int search_depth, int alpha, int beta){
@@ -176,7 +153,7 @@ static int alpha_beta_max(ai_seed* seed, game_state state, bool is_first, int se
 
     move_type possible_moves[200];
     int num_moves = 0;
-    all_possible_moves(state, possible_moves, &num_moves, is_first);
+    all_possible_moves(state, possible_moves, &num_moves, is_first, true);
     
     game_state next_state;
     for(int i = 0; i < num_moves; i++) {
@@ -203,7 +180,7 @@ static int alpha_beta_min(ai_seed* seed, game_state state, bool is_first, int se
 
     move_type possible_moves[200];
     int num_moves = 0;
-    all_possible_moves(state, possible_moves, &num_moves, is_first);
+    all_possible_moves(state, possible_moves, &num_moves, is_first, true);
 
     game_state next_state;
     for (int i = 0; i < num_moves; i++) {
@@ -226,7 +203,7 @@ static move_type ai_decide_move(ai_seed* seed, game_state state, bool is_first, 
     static move_type possible_moves[200];
 
     int num_moves = 0;
-    all_possible_moves(state, possible_moves, &num_moves, is_first);
+    all_possible_moves(state, possible_moves, &num_moves, is_first, true);
 
     int best_idx = 0;
     game_state next_state;
