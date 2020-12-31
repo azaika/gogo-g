@@ -136,11 +136,11 @@ static bool advance_turn(gogo_controller* gc) {
 		printf((wins == 1) == is_first_player_turn(gc) ? "You Win\n" : "You Lose\n");
 		return false;
 	}
-	else if (is_checkmate(*gc->state, gc->turn % 2 == 0)) {
+	else if (is_checkmate(*gc->state, true)) {
 		printf(!is_player_first(gc) ? "You Win\n" : "You Lose\n");
 		return false;
 	}
-	else if (is_checkmate(*gc->state, gc->turn % 2 == 1)) {
+	else if (is_checkmate(*gc->state, false)) {
 		printf(is_player_first(gc) ? "You Win\n" : "You Lose\n");
 		return false;
 	}
