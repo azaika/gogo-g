@@ -209,7 +209,7 @@ static void all_possible_moves(game_state state, move_type* possible_moves, int*
                 move_tmp.piece = (piece_type)((i / 2) % 6);
                 move_tmp.from = get_coord(state[i]);
                 move_tmp.to = j;
-                for (int k = 0; k <= 1; k++) {
+                for (int k = 1; k >= 0; --k) {
                     move_tmp.do_promote = k;
                     if (validate_move(state, move_tmp, is_first)) {
                         possible_moves[moves_index] = move_tmp;

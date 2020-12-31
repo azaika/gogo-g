@@ -16,9 +16,9 @@ int main() {
         ai_generate_random_seed(&seeds[i], &rng);
     }
     
-    printf("generated initial seeds.\n");
+    printf("generated initial seeds\n");
 
-    ga_advance_turn(n, seeds, 10);
+    ga_advance_turn(n, seeds, 0);
 
     printf("selecting top seeds...\n");
 

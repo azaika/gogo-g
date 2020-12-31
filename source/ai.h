@@ -203,7 +203,7 @@ static int alpha_beta_min(ai_seed* seed, game_state state, bool is_first, int se
 static move_type ai_decide_move(ai_seed* seed, game_state state, bool is_first, int search_depth) {
     static move_type possible_moves[200];
 
-    time_t begin_ms = clock() / (CLOCKS_PER_SEC * 1000);
+    time_t begin_ms = clock() / (CLOCKS_PER_SEC / 1000);
 
     int num_moves = 0;
     all_possible_moves(state, possible_moves, &num_moves, is_first, true);
@@ -228,12 +228,24 @@ static move_type ai_decide_move(ai_seed* seed, game_state state, bool is_first, 
                 if(value >= beta) {
                     return possible_moves[best_idx];
                 }
+
+                // 思考が 9 秒超えたら打ち切り
+                time_t end_ms = clock() / (CLOCKS_PER_SEC / 1000);
+                if (end_ms - begin_ms >= 9000) {
+                    #ifdef DEBUG
+                    printf("elapsed : %dms\n", (int)(end_ms - begin_ms));
+                    #endif
+                    return possible_moves[best_idx];
+                }
             }
         }
 
-        // 思考が 1 秒超えたら打ち切り
-        time_t end_ms = clock() / (CLOCKS_PER_SEC * 1000);
-        if (end_ms - begin_ms > 1000) {
+        // 思考が 2 秒超えたら打ち切り
+        time_t end_ms = clock() / (CLOCKS_PER_SEC / 1000);
+        if (end_ms - begin_ms >= 3000) {
+            #ifdef DEBUG
+            printf("elapsed : %dms\n", (int)(end_ms - begin_ms));
+            #endif
             return possible_moves[best_idx];
         }
 
