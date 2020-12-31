@@ -36,7 +36,7 @@ static void init_gogo(gogo_controller* gc, bool is_player_first) {
 		exit(EXIT_FAILURE);
 	}
 
-	FILE* file = fopen("seed.bin", "rb");
+	FILE* file = fopen("learned.bin", "rb");
 	if (file == NULL) {
 		#ifdef DEBUG
 			pcg64_state* rng = (pcg64_state*)malloc(sizeof(pcg64_state));
@@ -46,7 +46,7 @@ static void init_gogo(gogo_controller* gc, bool is_player_first) {
 			free(rng);
 			return;
 		#else
-			fprintf(stderr, "failed to open 'seed.bin'.\n");
+			fprintf(stderr, "failed to open 'learned.bin'.\n");
 			exit(EXIT_SUCCESS);
 		#endif
 	}

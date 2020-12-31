@@ -194,6 +194,35 @@ static bool is_check(board_type* board, bool is_first) {
     return res;
 }
 
+static bool validate_move(game_state state, move_type move, bool is_first);
+
+static void all_possible_moves(game_state state, move_type* possible_moves, int* num_moves, bool is_first, bool include_drop) {
+    int moves_index = 0;
+    for (int i = 0; i < 12; i++) {
+        if (is_first_ones(state[i]) == is_first) {
+            for (coord_type j = 0; j < 25; j++) {
+                if (!include_drop && get_coord(state[i]) == TEGOMA) {
+                    continue;
+                }
+
+                move_type move_tmp;
+                move_tmp.is_drop = (get_coord(state[i]) == TEGOMA);
+                move_tmp.piece = (piece_type)((i / 2) % 6);
+                move_tmp.from = get_coord(state[i]);
+                move_tmp.to = j;
+                for (int k = 0; k <= 1; k++) {
+                    move_tmp.do_promote = k;
+                    if (validate_move(state, move_tmp, is_first)) {
+                        possible_moves[moves_index] = move_tmp;
+                        moves_index++;
+                    }
+                }
+            }
+        }
+    }
+    *num_moves = moves_index;
+}
+
 //自分が詰みかどうかを返す
 static bool is_checkmate(game_state state, bool is_first){
     board_type board;
@@ -204,80 +233,55 @@ static bool is_checkmate(game_state state, bool is_first){
     }
 
     piece_type hand_type = PIECE_EMPTY;
-    for(int i = 0; i < 11; i++){
-        if(board.hand[!is_first][i] != PIECE_EMPTY){
+    for (int i = 0; i < 11; i++) {
+        if (board.hand[!is_first][i] != PIECE_EMPTY) {
             hand_type = board.hand[!is_first][i];
-            if(hand_type != PIECE_FU){
+            if (hand_type != PIECE_FU) {
                 break;
             }
         }
     }
 
-    int my_king_x;
-    int my_king_y;
-    for (int i = 0; i < 5; i++) {
-        for (int j = 0; j < 5; j++) {
-            if (board.field[i][j].first_ones == is_first && board.field[i][j].type == PIECE_OU) {
-                my_king_y = i;
-                my_king_x = j;
-            }
-        }
-    }
-
-    int dx[8] = {0, 1, 1, 1, 0, -1, -1, -1};
-    int dy[8] = {1, 1, 0, -1, -1, -1, 0, 1};
-
     game_state new_state;
     board_type new_board;
 
-    for (int i = 0; i < 8; i++) {
-        int now_x = my_king_x + dx[i];
-        int now_y = my_king_y + dy[i];
-        if(now_x < 0 || 4 < now_x || now_y < 0 || 4 < now_y) {
-            continue;
-        }
-
-        move_type king_move;
-        king_move.is_drop = false;
-        king_move.piece = PIECE_OU;
-        king_move.to = now_y * 5 + now_x;
-        king_move.from = my_king_y * 5 + my_king_x;
-        king_move.do_promote = false;
-        //王を動かして防げるか
-        if (able_to_move(&board, king_move, is_first)) {
-            copy_game_state(new_state, state);
-            write_move(new_state, king_move, is_first);
-            make_board(new_state, &new_board);
-            if (!is_check(&new_board, !is_first)) {
-                return false;
-            }
-        }
-    }
-
-    if (hand_type == PIECE_EMPTY) {
-        return true;
-    }
-
     // 駒を打って防げるか
-    for (int y = 0; y < 5; ++y) {
-        for (int x = 0; x < 5; ++x) {
-            if (board.field[y][x].type != PIECE_EMPTY) {
-                continue;
-            }
+    if (hand_type != PIECE_EMPTY) {
+        for (int y = 0; y < 5; ++y) {
+            for (int x = 0; x < 5; ++x) {
+                if (board.field[y][x].type != PIECE_EMPTY) {
+                    continue;
+                }
 
-            move_type guard_move;
-            guard_move.is_drop = true;
-            guard_move.piece = hand_type;
-            guard_move.to = y * 5 + x;
-            guard_move.from = TEGOMA;
-            guard_move.do_promote = false;
+                move_type guard_move;
+                guard_move.is_drop = true;
+                guard_move.piece = hand_type;
+                guard_move.to = y * 5 + x;
+                guard_move.from = TEGOMA;
+                guard_move.do_promote = false;
 
-            copy_game_state(new_state, state);
-            write_move(new_state, guard_move, is_first);
-            make_board(new_state, &new_board);
-            if ((!validate_twopawn(&new_board)) && (!is_check(&new_board, !is_first))) {
-                return false;
+                copy_game_state(new_state, state);
+                write_move(new_state, guard_move, is_first);
+                make_board(new_state, &new_board);
+                if ((!validate_twopawn(&new_board)) && (!is_check(&new_board, !is_first))) {
+                    return false;
+                }
             }
+        }
+    }
+    
+    // 駒を動かして防げるか
+    static move_type possible_moves[200];
+    int num_moves = 0;
+    all_possible_moves(state, possible_moves, &num_moves, is_first, false);
+
+    for (int i = 0; i < num_moves; ++i) {
+        copy_game_state(new_state, state);
+        write_move(new_state, possible_moves[i], is_first);
+        make_board(new_state, &new_board);
+
+        if (!is_check(&new_board, !is_first)) {
+            return false;
         }
     }
 
@@ -338,7 +342,7 @@ static int check_sennichite(game_state_hash history[], int turn, bool is_first) 
 	return 0;
 }
 
-bool validate_move(game_state state, move_type move, bool is_first) {
+static bool validate_move(game_state state, move_type move, bool is_first) {
     // 成れないのに成ろうとしたら NG
     if (!can_promote(move, is_first) && move.do_promote)
         return false;
