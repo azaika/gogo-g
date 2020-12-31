@@ -7,6 +7,7 @@
 
 #include <stdbool.h>
 #include <string.h>
+#include <time.h>
 
 struct ai_seed_tag {
     // 相手玉と自分の駒の相対的な位置関係による評価値
@@ -69,7 +70,7 @@ static int count_pieces(game_state state, piece_type type, bool is_first, bool i
 #define INF (200000000)
 
 // 評価関数
-// is_first : 先手番のターンかどうか
+// is_first : 自分が先手番かどうか
 static int ai_evaluate(ai_seed* seed, game_state state, bool is_first) {
     if (check_wins(state) == (is_first ? 1 : 2)) {
         return INF;
@@ -173,7 +174,7 @@ static int alpha_beta_max(ai_seed* seed, game_state state, bool is_first, int se
 }
 
 static int alpha_beta_min(ai_seed* seed, game_state state, bool is_first, int search_depth, int alpha, int beta) {
-    int value = ai_evaluate(seed, state, is_first);
+    int value = ai_evaluate(seed, state, !is_first);
     if (search_depth == 0 || abs(value) == INF) {
         return value;
     }
@@ -202,6 +203,8 @@ static int alpha_beta_min(ai_seed* seed, game_state state, bool is_first, int se
 static move_type ai_decide_move(ai_seed* seed, game_state state, bool is_first, int search_depth) {
     static move_type possible_moves[200];
 
+    time_t begin_ms = clock() / (CLOCKS_PER_SEC * 1000);
+
     int num_moves = 0;
     all_possible_moves(state, possible_moves, &num_moves, is_first, true);
 
@@ -226,6 +229,12 @@ static move_type ai_decide_move(ai_seed* seed, game_state state, bool is_first, 
                     return possible_moves[best_idx];
                 }
             }
+        }
+
+        // 思考が 1 秒超えたら打ち切り
+        time_t end_ms = clock() / (CLOCKS_PER_SEC * 1000);
+        if (end_ms - begin_ms > 1000) {
+            return possible_moves[best_idx];
         }
 
         // 反復するときは前の最善手から始める

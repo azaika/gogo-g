@@ -103,14 +103,12 @@ bool is_still_unpromoted(board_type* board, move_type move) {
 bool able_to_move(board_type* board, move_type move, bool is_first) {
     if (move.is_drop == true && can_promote(move, is_first) && move.piece == PIECE_FU)
         return false;
-    if (move.is_drop == false)
-    {
+    if (move.is_drop == false) {
         //移動先に駒があるのは NG
         if (!validate_absent(board, move, true, is_first))
             return false;
         
-        if (board->field[move.from / 5][move.from % 5].first_ones != is_first)
-        {
+        if (board->field[move.from / 5][move.from % 5].first_ones != is_first) {
             //相手の駒を動かそうとした
             return false;
         }
@@ -365,7 +363,11 @@ static bool validate_move(game_state state, move_type move, bool is_first) {
     }
     else if (!able_to_move(&cur_board, move, is_first)) // 駒の動きとして移動が可能でないなら NG
         return false;
-    
+
+    // 既に成ってるのに成ろうとするのは NG
+    if (cur_board.field[move.from / 5][move.from % 5].promoted && move.do_promote)
+        return false;
+
     // 歩が成れるのに成っていないのは NG
     if (move.piece == PIECE_FU && can_promote(move, is_first) && is_still_unpromoted(&cur_board, move))
         return false;
