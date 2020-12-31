@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <assert.h>
 #include <stdint.h>
+#include <string.h>
 
 //  1 なら s1 の勝ち
 //  0 なら引き分け
@@ -68,27 +69,32 @@ static int ga_battle(ai_seed* s1, ai_seed* s2, bool is_s1_first) {
 static void ga_do_tournament(int size, ai_seed challengers[], int k, int winners[]) {
     int* points = (int*)malloc(size * sizeof(int));
     if (points == NULL) {
-        fprintf(stderr, "memory allocation error in ga_do_tournament()");
+        fprintf(stderr, "memory allocation error in ga_do_tournament()\n");
         exit(EXIT_FAILURE);
     }
+
+    memset(points, 0, sizeof(int) * size);
 
     for (int i = 0; i < size; ++i) {
         for (int j = i + 1; j < size; ++j) {
             int res = ga_battle(&challengers[i], &challengers[j], (uint32_t)time(NULL) % 2);
+            printf("battle finished! (%d, %d) = %d\n", i, j, res);
 
             points[i] += res;
             points[j] -= res;
         }
     }
 
+    printf("all battle finished!\n");
+
     int* top = (int*)malloc(k * sizeof(int));
     if (top == NULL) {
-        fprintf(stderr, "memory allocation error in ga_do_tournament()");
+        fprintf(stderr, "memory allocation error in ga_do_tournament()\n");
         exit(EXIT_FAILURE);
     }
 
     for (int i = 0; i < k; ++i) {
-        top[i] = -size * size;
+        top[i] = -5 * size * size;
     }
 
     for (int i = 0; i < size; ++i) {
@@ -99,17 +105,19 @@ static void ga_do_tournament(int size, ai_seed challengers[], int k, int winners
         top[k - 1] = points[i];
         winners[k - 1] = i;
 
-        for (int j = k - 1; j >= 1 && points[j] > points[j - 1]; --j) {
-            int p = points[j];
+        for (int j = k - 1; j >= 1 && top[j] > top[j - 1]; --j) {
+            int p = top[j];
             int idx = winners[j];
 
-            points[j] = points[j - 1];
-            points[j - 1] = p;
+            top[j] = top[j - 1];
+            top[j - 1] = p;
 
             winners[j] = winners[j - 1];
             winners[j - 1] = idx;
         }
     }
+
+    printf("tournament finished!\n");
     
     free(top);
     free(points);
@@ -180,7 +188,7 @@ static void ga_mutate_seed(ai_seed* seed, pcg64_state* rng) {
 }
 
 // トーナメント方式を繰り返して次世代の遺伝子を選ぶ
-static void ga_select_next(int n, ai_seed cur[], ai_seed next[], pcg64_state* rng) {
+static void ga_select_next(int n, const ai_seed cur[], ai_seed next[], pcg64_state* rng) {
     const int num_tops = 7;
     const int tournament_size = 20;
 
@@ -188,11 +196,9 @@ static void ga_select_next(int n, ai_seed cur[], ai_seed next[], pcg64_state* rn
 
     int winners[num_tops];
 
-    int num_adopted = 0;
-
     static ai_seed cand[512];
     static int cand_idx[512];
-    for (int i = 0; i < tournament_size; ++i) {
+    for (int i = 0; i < n / tournament_size; ++i) {
         random_select(n, tournament_size, cand_idx, rng);
         for (int j = 0; j < tournament_size; ++j) {
             ai_copy_seed(&cur[cand_idx[i]], &cand[i]);
@@ -201,41 +207,46 @@ static void ga_select_next(int n, ai_seed cur[], ai_seed next[], pcg64_state* rn
         ga_do_tournament(tournament_size, cand, num_tops, winners);
 
         // 1 ～ 3 位はそのまま採用
-        ai_copy_seed(&cur[winners[0]], &next[i * num_tops]);
-        ai_copy_seed(&cur[winners[1]], &next[i * num_tops + 1]);
-        ai_copy_seed(&cur[winners[2]], &next[i * num_tops + 2]);
+        ai_copy_seed(&cur[winners[0]], &next[i * tournament_size]);
+        ai_copy_seed(&cur[winners[1]], &next[i * tournament_size + 1]);
+        ai_copy_seed(&cur[winners[2]], &next[i * tournament_size + 2]);
         
         // 4-7, 5-6, 5-7, 6-7 の組み合わせ以外は交配して採用
         int num_written = 3;
-        for (int j = 0; j < num_tops; ++i) {
-            for (int k = j + 1; k < num_tops && j + k <= 9; ++k) {
-                ga_cross_seeds(&cur[winners[j]], &cur[winners[k]], &next[i * num_tops + num_written], rng);
+        for (int j = 0; j < num_tops; ++j) {
+            for (int k = j + 1; k < num_tops && j + k < 9; ++k) {
+                ga_cross_seeds(&cur[winners[j]], &cur[winners[k]], &next[i * tournament_size + num_written], rng);
                 ++num_written;
             }
         }
+
+        printf("completed seeds crossing!\n");
 
         // 1 位以外は突然変異しうる
         for (int j = 1; j < tournament_size; ++j) {
             ga_mutate_seed(&next[j], rng);
         }
+
+        printf("completed seeds mutating!\n");
     }
 }
 
 // N は数百程度を想定
 static void ga_advance_turn(int n, ai_seed seeds[], int turn) {
     ai_seed* buf = (ai_seed*)malloc(n * sizeof(ai_seed));
-
-    pcg64_state* rng = (pcg64_state*)malloc(sizeof(pcg64_state));
-    pcg64_srandom_by_time(rng);
-
     if (buf == NULL) {
-        fprintf(stderr, "memory allocation error in ga_advance_turn()");
+        fprintf(stderr, "memory allocation error in ga_advance_turn()\n");
         exit(EXIT_FAILURE);
     }
 
-    ai_seed* ptr[2] = {seeds, buf};
+    pcg64_state rng;
+    pcg64_srandom_by_time(&rng);
+
+    ai_seed* ptr[2] = { seeds, buf };
     for (int i = 0; i < turn; ++i) {
-        ga_select_next(n, ptr[i % 2], ptr[(i + 1) % 2], rng);
+        printf("[begin] turn %d\n", i);
+        ga_select_next(n, ptr[i % 2], ptr[(i + 1) % 2], &rng);
+        printf("[DONE] turn %d\n", i);
     }
 
     if (turn % 2 == 1) {
