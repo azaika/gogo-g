@@ -84,6 +84,7 @@ bool has_piece(board_type* board, piece_type piece, bool is_first) {
 
 // 成れるかどうかを返す
 bool can_promote(move_type move, bool is_first) {
+    if (move.piece == PIECE_OU || move.piece == PIECE_KI) return false;
     if (move.is_drop) return false;
     else if(move.from / 5 == 0 && !is_first) return true;
     else if(move.from / 5 == 4 && is_first) return true;
