@@ -286,7 +286,7 @@ static bool is_checkmate(game_state state, bool is_first){
 
     static move_type possible_moves[200];
     int num_moves = 0;
-    all_possible_moves(state, possible_moves, &num_moves, is_first, false);
+    all_possible_moves(state, possible_moves, &num_moves, is_first, true);
 
     return num_moves == 0;
 }
