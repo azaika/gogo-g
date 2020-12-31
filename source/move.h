@@ -224,7 +224,7 @@ static void all_possible_moves(game_state state, move_type* possible_moves, int*
 
 //自分が詰みかどうかを返す
 static bool is_checkmate(game_state state, bool is_first){
-    /*board_type board;
+    board_type board;
     make_board(state, &board);
 
     if (!is_check(&board, !is_first)) {
@@ -282,13 +282,9 @@ static bool is_checkmate(game_state state, bool is_first){
         if (!is_check(&new_board, !is_first)) {
             return false;
         }
-    }*/
-
-    static move_type possible_moves[200];
-    int num_moves = 0;
-    all_possible_moves(state, possible_moves, &num_moves, is_first, true);
-
-    return num_moves == 0;
+    }
+    
+    return true;
 }
 
 // どちらかが王を取って勝っているかどうかを判定する
