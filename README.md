@@ -2,7 +2,6 @@
 5五将棋 を作る
 
 ## リンク
-- [課題サイト](https://sites.google.com/site/isutbe2020/%E3%82%B0%E3%83%AB%E3%83%BC%E3%83%97%E8%AA%B2%E9%A1%8C/%E3%82%B0%E3%83%AB%E3%83%BC%E3%83%97%E8%AA%B2%E9%A1%8C2?authuser=0) (課題の説明)
 - [ルール説明](http://minerva.cs.uec.ac.jp/cgi-bin/uec55shogi/wiki.cgi?page=5%B8%DE%BE%AD%B4%FD%A4%CE%A5%EB%A1%BC%A5%EB) (電通大のページ)
 
 ## 各ファイルの説明
